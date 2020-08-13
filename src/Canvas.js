@@ -17,7 +17,27 @@ const Canvas = () => {
 
     const keyDown = ({nativeEvent}) => {
         const {key} = nativeEvent
-        console.log( 'K Down', key );
+        
+        switch (key) {
+            case 'ArrowUp':
+            case 'w':
+                console.log('^');
+                break
+            case 'ArrowDown':
+            case 's':
+                console.log('|');
+                break
+            case 'ArrowLeft':
+            case 'a':
+                console.log('<-');
+                break
+            case 'ArrowRight':
+            case 'd':
+                console.log('->');
+                break
+            default:
+                console.log( key );
+        }
     }
 
     const keyUp = ({nativeEvent}) => {
