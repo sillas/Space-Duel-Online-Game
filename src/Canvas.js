@@ -7,6 +7,7 @@ const Canvas = () => {
     const animate_ref = useRef(null)
     const winW = window.innerWidth - 3
     const winH = window.innerHeight - 3
+    const input_direction = useRef([0, 0]) // [x, y] directions
 
     useEffect(() => {
         const canvas = canvas_ref.current
@@ -21,6 +22,7 @@ const Canvas = () => {
     const animate = (time) => {
         context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
         // animate Here
+        console.log( input_direction.current );
 
         animate_ref.current = requestAnimationFrame(animate);
     }
@@ -31,28 +33,48 @@ const Canvas = () => {
         switch (key) {
             case 'ArrowUp':
             case 'w':
-                console.log('^');
+                input_direction.current[1] = -1 // y axis is upside down
                 break
             case 'ArrowDown':
             case 's':
-                console.log('|');
+                input_direction.current[1] = 1
                 break
             case 'ArrowLeft':
             case 'a':
-                console.log('<-');
+                input_direction.current[0] = -1
                 break
             case 'ArrowRight':
             case 'd':
-                console.log('->');
+                input_direction.current[0] = 1
                 break
             default:
                 console.log( key );
         }
     }
 
-    const keyUp = ({nativeEvent}) => {
+    const keyUp = ({nativeEvent}) => { // reset directions
         const {key} = nativeEvent
-        console.log( 'K Up', key );
+        
+        switch (key) {
+            case 'ArrowUp':
+            case 'w':
+                input_direction.current[1] = 0
+                break
+            case 'ArrowDown':
+            case 's':
+                input_direction.current[1] = 0
+                break
+            case 'ArrowLeft':
+            case 'a':
+                input_direction.current[0] = 0
+                break
+            case 'ArrowRight':
+            case 'd':
+                input_direction.current[0] = 0
+                break
+            default:
+                console.log( key );
+        }
     }
 
     return (
