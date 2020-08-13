@@ -4,6 +4,7 @@ const Canvas = () => {
 
     const canvas_ref = useRef(null)
     const context_ref = useRef(null)
+    const animate_ref = useRef(null)
     const winW = window.innerWidth - 3
     const winH = window.innerHeight - 3
 
@@ -13,7 +14,16 @@ const Canvas = () => {
         canvas.height = winH
 
         context_ref.current = canvas.getContext('2d')
+        animate_ref.current = requestAnimationFrame(animate)
+        return () => cancelAnimationFrame( animate_ref.current )
     }, [])
+
+    const animate = (time) => {
+        context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        // animate Here
+
+        animate_ref.current = requestAnimationFrame(animate);
+    }
 
     const keyDown = ({nativeEvent}) => {
         const {key} = nativeEvent
