@@ -19,7 +19,7 @@ const Canvas = () => {
         return () => cancelAnimationFrame( animate_ref.current )
     }, [])
 
-    const animate = (time) => {
+    const animate = () => { // (time) to get the milliseconds since app start.
         context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
         // animate Here
         console.log( input_direction.current );
@@ -48,11 +48,11 @@ const Canvas = () => {
                 input_direction.current[0] = 1
                 break
             default:
-                console.log( key );
+                console.log( 'press:', key ); // debug other buttons
         }
     }
 
-    const keyUp = ({nativeEvent}) => { // reset directions
+    const keyUp = ({nativeEvent}) => { // reset directions here
         const {key} = nativeEvent
         
         switch (key) {
@@ -73,7 +73,7 @@ const Canvas = () => {
                 input_direction.current[0] = 0
                 break
             default:
-                console.log( key );
+                console.log( 'press:', key ); // debug other buttons
         }
     }
 
