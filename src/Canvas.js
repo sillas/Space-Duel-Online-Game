@@ -4,7 +4,7 @@ const Canvas = () => {
 
     const winW = window.innerWidth - 3
     const winH = window.innerHeight - 3
-    const wheel_max_min = [0, 10]
+    const wheel_mouse_max_min = [0, 10]
 
     const canvas_ref = useRef(null)
     const context_ref = useRef(null)
@@ -60,13 +60,13 @@ const Canvas = () => {
         const { wheelDeltaY } = nativeEvent
         if( wheelDeltaY > 0 ) {
 
-            if( input_mouse_wheel.current == wheel_max_min[1] ) return
+            if( input_mouse_wheel.current == wheel_mouse_max_min[1] ) return
             
             input_mouse_wheel.current++
             return
         }
 
-        if( input_mouse_wheel.current == wheel_max_min[0]) return
+        if( input_mouse_wheel.current == wheel_mouse_max_min[0]) return
 
         input_mouse_wheel.current--
     }
