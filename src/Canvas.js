@@ -16,11 +16,16 @@ const Canvas = () => {
     const input_mouse_button = useRef([false, false, false]) // [left button, middle button, right button]
     const input_mouse_wheel = useRef(0)
 
+    const image = new Image()
+    image.src = "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?ixlib=rb-1.2.1&auto=format&fit=crop&w=1951&q=80"
+    
     useEffect(() => {
+        image.onload = drawImageActualSize
         const canvas = canvas_ref.current
         canvas.width = winW
         canvas.height = winH
-        canvas.oncontextmenu = ev => ev.preventDefault()
+        // canvas.oncontextmenu = ev => ev.preventDefault() // prevent right-click context menu
+
         context_ref.current = canvas.getContext('2d')
         animate_ref.current = requestAnimationFrame(animate)
         return () => cancelAnimationFrame( animate_ref.current )
@@ -28,8 +33,9 @@ const Canvas = () => {
 
     const animate = () => { // (time) to get the milliseconds since app start.
         context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        draw_scenario()
         // animate Here
-        console.log( 
+        console.log(
             input_direction.current, 
             input_mouse_position.current, 
             input_mouse_button.current, 
@@ -37,6 +43,14 @@ const Canvas = () => {
             input_numeric.current,
             input_mouse_wheel.current );
         animate_ref.current = requestAnimationFrame(animate);
+    }
+
+    const drawImageActualSize = ()=> {
+        context_ref.current.drawImage(image, 0, 0, winW, winH);
+    }
+
+    const draw_scenario = () => {
+        drawImageActualSize()
     }
 
     // Mouse inputs -----------------------------------
