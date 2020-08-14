@@ -8,6 +8,8 @@ const Canvas = () => {
     const winW = window.innerWidth - 3
     const winH = window.innerHeight - 3
     const input_direction = useRef([0, 0]) // [x, y] directions
+    const input_space = useRef(false) // space bar
+    const input_numeric = useRef('1') // input numbers: 1 to 5
 
     useEffect(() => {
         const canvas = canvas_ref.current
@@ -22,7 +24,7 @@ const Canvas = () => {
     const animate = () => { // (time) to get the milliseconds since app start.
         context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
         // animate Here
-        console.log( input_direction.current );
+        console.log( input_direction.current, input_space.current, input_numeric.current );
 
         animate_ref.current = requestAnimationFrame(animate);
     }
@@ -46,6 +48,16 @@ const Canvas = () => {
             case 'ArrowRight':
             case 'd':
                 input_direction.current[0] = 1
+                break
+            case ' ':
+                input_space.current = true
+                break
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+                input_numeric.current = key
                 break
             default:
                 console.log( 'press:', key ); // debug other buttons
@@ -71,6 +83,15 @@ const Canvas = () => {
             case 'ArrowRight':
             case 'd':
                 input_direction.current[0] = 0
+                break
+            case ' ':
+                input_space.current = false
+                break
+            case '1': // ignore these keys
+            case '2':
+            case '3':
+            case '4':
+            case '5':
                 break
             default:
                 console.log( 'press:', key ); // debug other buttons
