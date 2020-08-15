@@ -80,22 +80,31 @@ const Canvas = () => {
         context_ref.current.stroke()
         context_ref.current.fill()
     }
+    // Socket events ----------------------------------
 
+    const socketSend = ( event, data ) => {
+        socket.emit('data.input', {
+            user: 1,
+            event: event,
+            data: data
+        })
+        return data
+    }
     // Mouse inputs -----------------------------------
     const mouseMove = ({nativeEvent}) => {
         const {offsetX, offsetY} = nativeEvent
-        input_mouse_position.current = [ offsetX, offsetY ]
+        input_mouse_position.current = socketSend('mm', [ offsetX, offsetY ])
     }
 
     const mouseDown = ({nativeEvent}) => {
         const { button, offsetX, offsetY } = nativeEvent
-        input_mouse_position.current = [ offsetX, offsetY ]
-        input_mouse_button.current[ button ] = true
+        input_mouse_button.current[ button ] = socketSend('md_' + button, true)
+        input_mouse_position.current = socketSend('mm', [ offsetX, offsetY ])
     }
 
     const mouseUp = ({nativeEvent}) => {
         const { button } = nativeEvent
-        input_mouse_button.current[ button ] = false        
+        input_mouse_button.current[ button ] = socketSend('mu_' + button, false)        
     }
 
     const mouseWheel = ({nativeEvent}) => {
@@ -104,13 +113,13 @@ const Canvas = () => {
 
             if( input_mouse_wheel.current === wheel_mouse_max_min.current[1] ) return
             
-            input_mouse_wheel.current++
+            input_mouse_wheel.current = socketSend('mw', input_mouse_wheel.current + 1)
             return
         }
 
         if( input_mouse_wheel.current === wheel_mouse_max_min.current[0]) return
 
-        input_mouse_wheel.current--
+        input_mouse_wheel.current = socketSend('mw', input_mouse_wheel.current - 1)
     }
 
     // Keyboard inputs --------------------------------
@@ -119,30 +128,30 @@ const Canvas = () => {
         
         switch (key) {
             case 'ArrowUp':
-            case 'w':
-                input_direction.current[1] = -1 // y axis is upside down
+            case 'w': // y axis is upside down
+                input_direction.current[1] = input_direction.current[1] === -1 ? -1: socketSend('diry', -1)
                 break
             case 'ArrowDown':
             case 's':
-                input_direction.current[1] = 1
+                input_direction.current[1] = input_direction.current[1] === 1 ? 1: socketSend('diry', 1)
                 break
             case 'ArrowLeft':
             case 'a':
-                input_direction.current[0] = -1
+                input_direction.current[0] = input_direction.current[0] === -1 ? -1: socketSend('dirx', -1)
                 break
             case 'ArrowRight':
             case 'd':
-                input_direction.current[0] = 1
+                input_direction.current[0] = input_direction.current[0] === 1 ? 1: socketSend('dirx', 1)
                 break
             case ' ':
-                input_space.current = true
+                input_space.current = input_space.current ? true: socketSend('space', true)
                 break
             case '1':
             case '2':
             case '3':
             case '4':
             case '5':
-                input_numeric.current = key
+                input_numeric.current = socketSend('num', key)
                 break
             default:
                 console.log( 'press:', key ); // debug other buttons
@@ -155,22 +164,19 @@ const Canvas = () => {
         switch (key) {
             case 'ArrowUp':
             case 'w':
-                input_direction.current[1] = 0
-                break
             case 'ArrowDown':
             case 's':
-                input_direction.current[1] = 0
+                input_direction.current[1] = socketSend('diry', 0)
                 break
             case 'ArrowLeft':
             case 'a':
-                input_direction.current[0] = 0
-                break
             case 'ArrowRight':
             case 'd':
-                input_direction.current[0] = 0
+                socketSend('dirx', 0)
+                input_direction.current[0] = socketSend('dirx', 0)
                 break
             case ' ':
-                input_space.current = false
+                input_space.current = socketSend('space', false)
                 break
             case '1': // ignore these keys release
             case '2':
