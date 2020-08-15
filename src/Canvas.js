@@ -1,4 +1,8 @@
 import React, { useRef, useEffect } from 'react'
+import io from 'socket.io-client'
+
+const socket = io('http://localhost:8080')
+socket.on('connect', () => console.log('[IO] Connect => A new connection start'))
 
 const Canvas = () => {
 
@@ -22,7 +26,7 @@ const Canvas = () => {
     const input_mouse_position = useRef([0, 0]) // [x, y]
     const input_mouse_button = useRef([false, false, false]) // [left button, middle button, right button]
     const input_mouse_wheel = useRef(0)
-    
+
     useEffect(() => {
         const canvas = canvas_ref.current
         canvas.width = winW.current
