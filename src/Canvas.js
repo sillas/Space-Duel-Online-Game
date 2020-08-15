@@ -2,10 +2,17 @@ import React, { useRef, useEffect } from 'react'
 
 const Canvas = () => {
 
+    const styles = {
+        width: "100th",
+        height: "100th",
+        background: "url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?ixlib=rb-1.2.1&auto=format&fit=crop&w=1951&q=80')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover"
+    }
+
     const winW = useRef(window.innerWidth - 3)
     const winH = useRef(window.innerHeight - 3)
     const wheel_mouse_max_min = useRef([0, 10])
-
     const canvas_ref = useRef(null)
     const context_ref = useRef(null)
     const animate_ref = useRef(null)
@@ -29,7 +36,7 @@ const Canvas = () => {
 
     const animate = () => { // (time) to get the milliseconds since app start.
         context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        draw_scenario()
+        //draw_scenario()
 
         drawSpaceShips()
         // animate Here
@@ -55,7 +62,6 @@ const Canvas = () => {
 
     const drawSpaceShips = () => {
         const [x, y] = input_mouse_position.current
-        //const ship_from_db = [[-10, 12], [14, 0], [-10, -12]]
         const ship_from_db = [[-50, 52], [54, 0], [-50, -52]]
 
         context_ref.current.beginPath()
@@ -162,7 +168,7 @@ const Canvas = () => {
             case ' ':
                 input_space.current = false
                 break
-            case '1': // ignore these keys
+            case '1': // ignore these keys release
             case '2':
             case '3':
             case '4':
@@ -173,14 +179,6 @@ const Canvas = () => {
         }
     }
     // ------------------------------------------------
-
-    const styles = {
-        width: "100th",
-        height: "100th",
-        background: "url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?ixlib=rb-1.2.1&auto=format&fit=crop&w=1951&q=80')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover"
-    }
 
     return (
         <div style={ styles }>
