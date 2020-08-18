@@ -2,10 +2,8 @@ import React, { useRef, useEffect } from 'react'
 import io from 'socket.io-client'
 import { v4 as uuidv4 } from 'uuid'
 
-const user = 'sillas123' + uuidv4()
-
+const user = 'sillas_' + uuidv4()
 const socket = io('http://localhost:8080')
-socket.on('connect', () => console.log('[IO] Connect => A new connection start'))
 
 const Canvas = () => {
 
@@ -39,17 +37,33 @@ const Canvas = () => {
         context_ref.current = canvas.getContext('2d')
         animate_ref.current = requestAnimationFrame(animate)
 
-        socket.emit('join.sector', {user: user, sector:'alpha1'}) // alpha1 == room
-        socket.on('data.server', receiveData )
+        socket.on('connect', () => console.log('[IO] Connect => A new connection start'))
+        socket.emit('join', {user: user, sector:'alpha1'}) // alpha1 == room
+        socket.on('server', receiveData )
+        socket.on('msg', msg => console.log( msg) )
 
         return () => {
-            socket.off('data.server', receiveData )
+            socket.off('server', receiveData )
+            socket.off('msg', () => {} )
             cancelAnimationFrame( animate_ref.current )
         }
     }, [])
 
     const receiveData = data => {
-        console.log( data );
+        let { u, e, d } = data
+        
+        if(u === user) {
+            console.log( u );
+
+            switch ( e ) {
+                case 'p':
+                    input_mouse_position.current = d
+                    break;
+            
+                default:
+                    break;
+            }
+        }
     }
 
     const animate = () => { // (time) to get the milliseconds since app start.
@@ -97,7 +111,7 @@ const Canvas = () => {
     // Socket events ----------------------------------
 
     const socketSend = ( event, data ) => {
-        socket.emit('data.input', {
+        socket.emit('data', {
             user: user,
             event: event,
             data: data
@@ -107,7 +121,7 @@ const Canvas = () => {
     // Mouse inputs -----------------------------------
     const mouseMove = ({nativeEvent}) => {
         const {offsetX, offsetY} = nativeEvent
-        input_mouse_position.current = socketSend('mm', [ offsetX, offsetY ])
+        socketSend('mm', [ offsetX, offsetY ])
     }
 
     const mouseDown = ({nativeEvent}) => {

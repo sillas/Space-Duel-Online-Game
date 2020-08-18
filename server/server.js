@@ -12,35 +12,29 @@ const SERVER_PORT = 8080
 let dictUser = {}
 
 io.on('connection', socket => {
-    console.log('[IO] Connection => Server has a new connection');
 
-    socket.on('join.sector', data => {
-        dictUser[socket.id] = { user: data['user'], sector: data['sector'] }
-        socket.join( data['sector'] )
-        console.log( `Explorer "${data['user']}" enteres in "${data['sector']}" sector` )
+    socket.on('join', data => {
+        dictUser[ socket.id ] = { user: data.user, sector: data.sector }
+        socket.join( data.sector )
+        io.to( data.sector ).emit('msg', `${data.user} enteres in this sector`)
     })
 
-    socket.on('data.input', data => { // roons ?
-        //console.log('[Socket] data.input => ', data);
-        /*user = data['user']
-        pos = data['data']*/
-        let room = dictUser[ socket.id ]['sector']
-        io.to( room ).emit('data.server', 'hi') // broadcast the proccessed data
+    socket.on('data', data => {
+
+        if(data.event === 'mm') {
+            let room = dictUser[ socket.id ].sector
+            io.to( room ).emit('server', {u: data.user, e:'p', d: data.data}) // broadcast
+        }
+
     })
     
     socket.on('disconnecting', () => {
-        // const rooms = Object.keys(socket.rooms);
-        let user = dictUser[ socket.id ]['user'] 
+        let user = dictUser[ socket.id ].user
+        io.to( dictUser[ socket.id ].sector ).emit('msg', `${user} deixou o setor.`)
         delete dictUser[ socket.id ]
-        console.log( 'disconnecting:', dictUser );
     });
-
-    socket.on('disconnect', () => console.log('[Socket] Disconnected'))
 })
 
 server.listen(SERVER_PORT, SERVER_HOST, () => {
     console.log(`[HTTP] Listen => Server is running att http://${SERVER_HOST}:${SERVER_PORT}`);
-    console.log(`[HTTP] Listen => Press CTRL+C to stop it`);
 })
-
-// See Socket.Io Broadcast and roons
