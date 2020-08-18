@@ -1,5 +1,8 @@
 import React, { useRef, useEffect } from 'react'
 import io from 'socket.io-client'
+import { v4 as uuidv4 } from 'uuid'
+
+const user = 'sillas123' + uuidv4()
 
 const socket = io('http://localhost:8080')
 socket.on('connect', () => console.log('[IO] Connect => A new connection start'))
@@ -35,8 +38,19 @@ const Canvas = () => {
 
         context_ref.current = canvas.getContext('2d')
         animate_ref.current = requestAnimationFrame(animate)
-        return () => cancelAnimationFrame( animate_ref.current )
+
+        socket.emit('join.sector', {user: user, sector:'alpha1'}) // alpha1 == room
+        socket.on('data.server', receiveData )
+
+        return () => {
+            socket.off('data.server', receiveData )
+            cancelAnimationFrame( animate_ref.current )
+        }
     }, [])
+
+    const receiveData = data => {
+        console.log( data );
+    }
 
     const animate = () => { // (time) to get the milliseconds since app start.
         context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
@@ -84,7 +98,7 @@ const Canvas = () => {
 
     const socketSend = ( event, data ) => {
         socket.emit('data.input', {
-            user: 1,
+            user: user,
             event: event,
             data: data
         })
