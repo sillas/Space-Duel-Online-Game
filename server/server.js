@@ -1,6 +1,7 @@
 const Koa = require('koa')
 const Http = require('http')
 const Socket = require('socket.io')
+const redis = require('redis')
 
 const app = new Koa()
 const server = Http.createServer(app.callback())
@@ -9,7 +10,23 @@ const io = Socket(server)
 const SERVER_HOST = "localhost"
 const SERVER_PORT = 8080
 
+const rclient = redis.createClient({
+    port      : 6379,
+    host      : SERVER_HOST
+});
+
 let dictUser = {}
+
+rclient.on('connect', () => console.log('Redis Connected'))
+rclient.on('error', e => console.log('REDIS ERROR', e))
+
+// -----------------------------------------------------------------------------------------
+rclient.set('i_sillas', JSON.stringify({x:159, y:789, dir: 187, point: 447}))
+
+rclient.get('i_sillas', function(err, reply) {
+    console.log( JSON.parse(reply) );
+});
+// -----------------------------------------------------------------------------------------
 
 io.on('connection', socket => {
 
