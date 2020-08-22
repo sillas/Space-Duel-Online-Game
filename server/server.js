@@ -59,7 +59,7 @@ io.on('connection', socket => {
 
         roons[ _currentRoom ].count++ // increment the number of players in this room
 
-        io.to( _currentRoom ).emit('msg', `${data.name} join the combat`)
+        io.to( _currentRoom ).emit('msg', `${data.name} entrou na arena`)
 
         if( !roons[ _currentRoom ].proccess ) roons[ _currentRoom ].proccess = setInterval( wordProccess, 0, _currentRoom )
 
@@ -72,25 +72,34 @@ io.on('connection', socket => {
     // ------------------------------------------------------- preparar o disconnect
 
     socket.on('data', data => {
+
+        console.log( data );
         /*
         if(data.event === 'mm' && playersData[ socket.id ]) {
             io.to( playersData[ socket.id ].sector ).emit('server', {u: data.user, e:'p', d: data.data}) // broadcast
         }
         */
     })
-        
+    
     socket.on('disconnecting', () => {
-        /*
-        let user = playersData[ socket.id ].user
-        io.to( playersData[ socket.id ].sector ).emit('msg', `${user} deixou o setor.`)
-        delete playersData[ socket.id ]
 
-        io.to( 'worldduel' ).emit('data', 0)
+        const room = players[socket.id] // get the room
+        const playerName = roons[ room ].players[ socket.id ].name
+        
+        // Remove the player from the room
+        roons[ room ].count-- 
+        delete roons[ room ].players[ socket.id ]
+        delete players[ socket.id ]
 
-        if( !Object.keys(playersData).length ) {
-            clearInterval( playersData[ socket.id ].watch_proccess )
+        // Inform the players of the room
+        io.to( room ).emit('msg', `${playerName} deixou a batalha.`)
+
+        // check if the room is empty
+        if( roons[ room ].count <= 0 ) {
+            clearInterval( roons[ room ].proccess )
+            if( room == currentRoom ) addNewRoom()
+            delete roons[ room ]
         }
-        */
     });
 })
 
