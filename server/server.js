@@ -1,7 +1,7 @@
 const Koa = require('koa')
 const Http = require('http')
 const Socket = require('socket.io')
-const redis = require('redis')
+const { v4: uuidv4 } = require('uuid')
 
 const app = new Koa()
 const server = Http.createServer(app.callback())
@@ -10,45 +10,87 @@ const io = Socket(server)
 const SERVER_HOST = "localhost"
 const SERVER_PORT = 8080
 
-const rclient = redis.createClient({
-    port      : 6379,
-    host      : SERVER_HOST
-});
+const maxPlayersPerRoom = 6
+let currentRoom = uuidv4()
+let players = {}
+let roons = {}
 
-let dictUser = {}
+const wordProccess = sector => {
+    //const globalData = worldCalc( playersData[sector] )
+    //io.to( '' ).emit('data', 0)
+}
 
-rclient.on('connect', () => console.log('Redis Connected'))
-rclient.on('error', e => console.log('REDIS ERROR', e))
+const addNewRoom = () => {
+    currentRoom = uuidv4()
+    roons[ currentRoom ] = {
+        count:0,
+        proccess:null,
+        players:{}
+    }
+}
 
-// -----------------------------------------------------------------------------------------
-rclient.set('i_sillas', JSON.stringify({x:159, y:789, dir: 187, point: 447}))
+const initialPosition = [
+    // [xpos, ypos, orientation, lockingTo, energy]
+    [-500, 0, 0, 0, 1000], // team 1: position 0
+    [-500, 100, 0, 0, 1000], // team 1: position 1
+    [-500, 200, 0, 0, 1000], // team 1: position 2
+    [500, 0, 180, 180, 1000], // team 2: position 0
+    [500, 100, 180, 180, 1000], // team 2: position 1
+    [500, 200, 180, 180, 1000]  // team 2: position 2
+]
 
-rclient.get('i_sillas', function(err, reply) {
-    console.log( JSON.parse(reply) );
-});
-// -----------------------------------------------------------------------------------------
+addNewRoom()
 
 io.on('connection', socket => {
 
     socket.on('join', data => {
-        dictUser[ socket.id ] = { user: data.user, sector: data.sector }
-        socket.join( data.sector )
-        io.to( data.sector ).emit('msg', `${data.user} enteres in this sector`)
-    })
 
-    socket.on('data', data => {
+        const _currentRoom = currentRoom
 
-        if(data.event === 'mm') {
-            let room = dictUser[ socket.id ].sector
-            io.to( room ).emit('server', {u: data.user, e:'p', d: data.data}) // broadcast
+        players[socket.id] = _currentRoom // for easy remove on disconnect
+
+        roons[ _currentRoom ].players[ socket.id ] = { // add player to this room
+            name: data.name,
+            data: initialPosition[ roons[ _currentRoom ].count ]
         }
 
+
+        socket.join( _currentRoom )
+
+        roons[ _currentRoom ].count++ // increment the number of players in this room
+
+        io.to( _currentRoom ).emit('msg', `${data.name} join the combat`)
+
+        if( !roons[ _currentRoom ].proccess ) roons[ _currentRoom ].proccess = setInterval( wordProccess, 0, _currentRoom )
+
+        if( roons[ _currentRoom ].count > maxPlayersPerRoom ) {
+            addNewRoom()
+        }
     })
-    
+
+
+    // ------------------------------------------------------- preparar o disconnect
+
+    socket.on('data', data => {
+        /*
+        if(data.event === 'mm' && playersData[ socket.id ]) {
+            io.to( playersData[ socket.id ].sector ).emit('server', {u: data.user, e:'p', d: data.data}) // broadcast
+        }
+        */
+    })
+        
     socket.on('disconnecting', () => {
-        let user = dictUser[ socket.id ].user
-        io.to( dictUser[ socket.id ].sector ).emit('msg', `${user} deixou o setor.`)
-        delete dictUser[ socket.id ]
+        /*
+        let user = playersData[ socket.id ].user
+        io.to( playersData[ socket.id ].sector ).emit('msg', `${user} deixou o setor.`)
+        delete playersData[ socket.id ]
+
+        io.to( 'worldduel' ).emit('data', 0)
+
+        if( !Object.keys(playersData).length ) {
+            clearInterval( playersData[ socket.id ].watch_proccess )
+        }
+        */
     });
 })
 

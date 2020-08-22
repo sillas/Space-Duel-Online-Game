@@ -38,7 +38,7 @@ const Canvas = () => {
         animate_ref.current = requestAnimationFrame(animate)
 
         socket.on('connect', () => console.log('[IO] Connect => A new connection start'))
-        socket.emit('join', {user: user, sector:'alpha1'}) // alpha1 == room
+        socket.emit('join', { name: user }) // alpha1 == room
         socket.on('server', receiveData )
         socket.on('msg', msg => console.log( msg) )
 
@@ -118,6 +118,7 @@ const Canvas = () => {
         })
         return data
     }
+
     // Mouse inputs -----------------------------------
     const mouseMove = ({nativeEvent}) => {
         const {offsetX, offsetY} = nativeEvent
