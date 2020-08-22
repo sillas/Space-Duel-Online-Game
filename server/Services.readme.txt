@@ -1,0 +1,24 @@
+Services:
+
+Frontend send:
+    a - propulsion command (Up or Down arrow keys or 'w' or 's' keys)
+    b - fire main gun command (Mouse left button)
+    c - fire secondary heapon command (Mouse right button)
+    d - direction of the ship motion (calculed based on left and right arrows keys or 'a' and 'd' keys)
+    e - direction of the looking point (calculed based on mouse position)
+
+receive from client:
+    //            a        b         c       d         e
+    ship data [ username, 1|0|-1, boolean, boolean, 0 to 360, 0 to 360 ]
+    command   [ username, type, command ]
+    message   [ username, to, message ]
+
+send to client:
+    ships [ username, position [x, y], energy ]
+    heapons [ type, x, y, status ]
+    information [ type, data ]
+    messages [ from, message ]
+
+Obs:
+    The orientation of the ship and the direction of the target is proccessed localy, 
+    but only aplied when the data arives from the server.
