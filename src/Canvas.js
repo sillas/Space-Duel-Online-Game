@@ -5,6 +5,22 @@ import { v4 as uuidv4 } from 'uuid'
 const user = 'sillas_' + uuidv4()
 const socket = io('http://localhost:8080')
 
+// -------- Helpers
+function rotate(x, y, offset, angle) { // angle in radians
+    var cos = Math.cos(angle);
+    var sin = Math.sin(angle);
+
+    // Translate to (0, 0)
+    x -= offset[0];
+    y -= offset[1];
+
+    // Rotation Matrix
+    // |cosTh -sinTh|   |x|    |rX|
+    // |sinTh  cosTh| * |y| =  |rY|
+    return [(cos*x -sin*y) + offset[0], (sin*x +cos*y) + offset[1]];
+}
+// ----------------- End helpers
+
 const Canvas = () => {
 
     const styles = {
@@ -98,14 +114,19 @@ const Canvas = () => {
         const team = data[5]      
         const ship_from_db = [[-50, 52], [54, 0], [-50, -52]] // get when connect
         const drawShip = (x, y) => {
+
+            let rot = rotate( ship_from_db[0][0] + x, ship_from_db[0][1] + y, [x, y], orientation);
+
             context_ref.current.beginPath()
-            context_ref.current.moveTo(ship_from_db[0][0] + x, ship_from_db[0][1] + y)
+            context_ref.current.moveTo( rot[0], rot[1] )
+
             for(let index = 1; index < ship_from_db.length; index++) {
-                context_ref.current.lineTo(ship_from_db[index][0] + x, ship_from_db[index][1] + y)
+
+                rot = rotate( ship_from_db[index][0] + x, ship_from_db[index][1] + y, [x, y], orientation);
+                context_ref.current.lineTo( rot[0], rot[1] )
+
             }
         }
-
-        //context_ref.current.rotate( orientation * Math.PI / 180 )
         
         drawShip( xpos, ypos )
         
