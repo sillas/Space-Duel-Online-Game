@@ -24,9 +24,10 @@ const Canvas = () => {
     const input_direction = useRef( [0, 0] ) // [x, y] directions
     const input_space = useRef( false ) // space bar
     const input_numeric = useRef( '1' ) // input numbers: 1 to 5
-    const input_mouse_position = useRef( [0, 0] ) // [x, y]
+    // const input_mouse_position = useRef( [0, 0] ) // [x, y]
     const input_mouse_button = useRef( [false, false, false] ) // [left button, middle button, right button]
     const input_mouse_wheel = useRef( 0 )
+    const camPosition = useRef([0, 0]) // Camera
     const ships = useRef( [] )
 
     useEffect(() => {
@@ -44,7 +45,7 @@ const Canvas = () => {
         socket.on('msg', msg => console.log( msg) )
 
         return () => {
-            socket.off('server', receiveData )
+            socket.off('server', data => ships.current = Object.entries( data ) )
             socket.off('msg', () => {} )
             cancelAnimationFrame( animate_ref.current )
         }
@@ -53,6 +54,16 @@ const Canvas = () => {
     const animate = () => { // (time) to get the milliseconds since app start.
         context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
         //draw_scenario()
+
+        for ( let [, { name, data }] of ships.current ) { // first get the camera position
+            console.log( data );
+            if( name === user ) {
+                camPosition.current = [data[0], data[1]]
+                break
+            }
+        }
+
+        console.log('---------------------------');
 
         for ( let [, { name, data }] of ships.current ) {
             drawSpaceShips( name, data )
@@ -81,23 +92,24 @@ const Canvas = () => {
     const drawSpaceShips = ( name, data ) => {
         // data = [xpos, ypos, orientation, lockingTo, energy, team]
 
-        if( name === user) {
-            input_mouse_position.current = [ data[0], data[1] ]
-            //ctx.rotate(20 * Math.PI / 180)
-            return
+        const xpos = data[0]
+        const ypos = data[1]
+        const orientation = data[2]
+        const team = data[5]      
+        const ship_from_db = [[-50, 52], [54, 0], [-50, -52]] // get when connect
+        const drawShip = (x, y) => {
+            context_ref.current.beginPath()
+            context_ref.current.moveTo(ship_from_db[0][0] + x, ship_from_db[0][1] + y)
+            for(let index = 1; index < ship_from_db.length; index++) {
+                context_ref.current.lineTo(ship_from_db[index][0] + x, ship_from_db[index][1] + y)
+            }
         }
+
+        //context_ref.current.rotate( orientation * Math.PI / 180 )
         
-        const [x, y] = input_mouse_position.current
-        const ship_from_db = [[-50, 52], [54, 0], [-50, -52]]
-
-        context_ref.current.beginPath()
-        context_ref.current.moveTo(ship_from_db[0][0] + x, ship_from_db[0][1] + y)
-
-        for(let index = 1; index < ship_from_db.length; index++) {
-            context_ref.current.lineTo(ship_from_db[index][0] + x, ship_from_db[index][1] + y)
-        }
-
-        context_ref.current.lineWidth = 5
+        drawShip( xpos, ypos )
+        
+        context_ref.current.lineWidth = 2
         context_ref.current.fillStyle = '#8bd9d4'
         context_ref.current.stroke()
         context_ref.current.fill()

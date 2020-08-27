@@ -27,12 +27,12 @@ const addNewRoom = () => {
 
 const initialPosition = [
     // [xpos, ypos, orientation, lockingTo, energy, team]
-    [120, 120, 0, 0, 1000, true], // team 1: position 0
-    [400, 400, 0, 0, 1000, true], // team 1: position 1
-    [-500, 200, 0, 0, 1000, true], // team 1: position 2
-    [500, 0, 180, 180, 1000, false], // team 2: position 0
-    [500, 100, 180, 180, 1000, false], // team 2: position 1
-    [500, 200, 180, 180, 1000, false]  // team 2: position 2
+    [100, 120, 0, 0, 1000, true], // team 1: position 0
+    [100, 220, 0, 0, 1000, true], // team 1: position 1
+    [100, 320, 0, 0, 1000, true], // team 1: position 2
+    [500, 120, 180, 180, 1000, false], // team 2: position 0
+    [500, 220, 180, 180, 1000, false], // team 2: position 1
+    [500, 320, 180, 180, 1000, false]  // team 2: position 2
 ]
 
 addNewRoom()
@@ -62,7 +62,7 @@ io.on('connection', socket => {
     socket.on('join', data => {
 
         let _currentRoom = currentRoom
-        const ocuppy = function () 
+        let occupy = function () 
         {
             for (let index = 0; index < maxPlayersPerRoom; index++) {
                 if( !roons[ _currentRoom ].occupy[ index ] ) {
@@ -70,20 +70,21 @@ io.on('connection', socket => {
                     return index
                 }
             }
-            return null
+            return undefined
         }()
 
-        if( ocuppy === null ) { // Create a new room
+        if( occupy === undefined ) { // Create a new room
             addNewRoom()
             _currentRoom = currentRoom
-            ocuppy = 0
+            occupy = 0
         }
 
-        memPlayers[socket.id] = {room:_currentRoom, ocuppy:ocuppy} // for easy remove on disconnect
+        console.log( roons[ _currentRoom ].occupy, occupy );
+        memPlayers[socket.id] = {"room":_currentRoom, "occupy":occupy} // for easy remove on disconnect
 
         roons[ _currentRoom ].players[ socket.id ] = { // add player to this room
             name: data.name,
-            data: initialPosition[ ocuppy ]
+            data: initialPosition[ occupy ]
         }
 
         socket.join( _currentRoom )
@@ -116,6 +117,8 @@ io.on('connection', socket => {
         roons[ room ].occupy[ memPlayers[ socket.id ].occupy ] = false
         delete roons[ room ].players[ socket.id ]
         delete memPlayers[ socket.id ]
+
+        console.log( 'disconnect', roons[ room ].occupy );
 
         // Inform the players of the room
         io.to( room ).emit('msg', `${playerName} deixou a batalha.`)
