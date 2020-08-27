@@ -76,10 +76,10 @@ io.on('connection', socket => {
         if( occupy === undefined ) { // Create a new room
             addNewRoom()
             _currentRoom = currentRoom
+            roons[ _currentRoom ].occupy[ 0 ] = true
             occupy = 0
         }
 
-        console.log( roons[ _currentRoom ].occupy, occupy );
         memPlayers[socket.id] = {"room":_currentRoom, "occupy":occupy} // for easy remove on disconnect
 
         roons[ _currentRoom ].players[ socket.id ] = { // add player to this room
@@ -99,8 +99,6 @@ io.on('connection', socket => {
     // ------------------------------------------------------- preparar o disconnect
 
     socket.on('data', data => {
-
-        //console.log( data );
         /*
         if(data.event === 'mm' && playersData[ socket.id ]) {
             io.to( playersData[ socket.id ].sector ).emit('server', {u: data.user, e:'p', d: data.data}) // broadcast
@@ -117,8 +115,6 @@ io.on('connection', socket => {
         roons[ room ].occupy[ memPlayers[ socket.id ].occupy ] = false
         delete roons[ room ].players[ socket.id ]
         delete memPlayers[ socket.id ]
-
-        console.log( 'disconnect', roons[ room ].occupy );
 
         // Inform the players of the room
         io.to( room ).emit('msg', `${playerName} deixou a batalha.`)
