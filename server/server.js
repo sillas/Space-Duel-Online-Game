@@ -28,10 +28,10 @@ const addNewRoom = () => {
 const initialPosition = [
     // [xpos, ypos, orientation, lockingTo, energy, team]
     [100, 120, 0, 0, 1000, true], // team 1: position 0
-    [100, 220, 0, 0, 1000, true], // team 1: position 1
-    [100, 320, 0, 0, 1000, true], // team 1: position 2
     [500, 120, 180, 180, 1000, false], // team 2: position 0
+    [100, 220, 0, 0, 1000, true], // team 1: position 1
     [500, 220, 180, 180, 1000, false], // team 2: position 1
+    [100, 320, 0, 0, 1000, true], // team 1: position 2
     [500, 320, 180, 180, 1000, false]  // team 2: position 2
 ]
 

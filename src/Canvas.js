@@ -110,7 +110,7 @@ const Canvas = () => {
         drawShip( xpos, ypos )
         
         context_ref.current.lineWidth = 2
-        context_ref.current.fillStyle = '#8bd9d4'
+        context_ref.current.fillStyle = team ? '#8bd9d4':'#0000d4'
         context_ref.current.stroke()
         context_ref.current.fill()
     }
