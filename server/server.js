@@ -12,27 +12,27 @@ const SERVER_PORT = 8080
 
 const maxPlayersPerRoom = 6
 let currentRoom = uuidv4()
-let players = {}
+let memPlayers = {}
 let roons = {}
 
 
 const addNewRoom = () => {
     currentRoom = uuidv4()
     roons[ currentRoom ] = {
-        count:0,
+        occupy:[false, false, false, false, false, false],
         proccess:null,
         players:{}
     }
 }
 
 const initialPosition = [
-    // [xpos, ypos, orientation, lockingTo, energy]
-    [120, 120, 0, 0, 1000], // team 1: position 0
-    [400, 400, 0, 0, 1000], // team 1: position 1
-    [-500, 200, 0, 0, 1000], // team 1: position 2
-    [500, 0, 180, 180, 1000], // team 2: position 0
-    [500, 100, 180, 180, 1000], // team 2: position 1
-    [500, 200, 180, 180, 1000]  // team 2: position 2
+    // [xpos, ypos, orientation, lockingTo, energy, team]
+    [120, 120, 0, 0, 1000, true], // team 1: position 0
+    [400, 400, 0, 0, 1000, true], // team 1: position 1
+    [-500, 200, 0, 0, 1000, true], // team 1: position 2
+    [500, 0, 180, 180, 1000, false], // team 2: position 0
+    [500, 100, 180, 180, 1000, false], // team 2: position 1
+    [500, 200, 180, 180, 1000, false]  // team 2: position 2
 ]
 
 addNewRoom()
@@ -42,8 +42,8 @@ const worldCalc = context => {
     return []
 }
 
+
 const wordProccess = sector => {
-    //const globalData = worldCalc( playersData[sector] )
     io.to( sector ).emit('server', roons[ sector ].players)
     
     /*
@@ -56,31 +56,42 @@ const wordProccess = sector => {
     }*/
 }
 
+
 io.on('connection', socket => {
 
     socket.on('join', data => {
 
-        const _currentRoom = currentRoom
+        let _currentRoom = currentRoom
+        const ocuppy = function () 
+        {
+            for (let index = 0; index < maxPlayersPerRoom; index++) {
+                if( !roons[ _currentRoom ].occupy[ index ] ) {
+                    roons[ _currentRoom ].occupy[ index ] = true // True == occupied position
+                    return index
+                }
+            }
+            return null
+        }()
 
-        players[socket.id] = _currentRoom // for easy remove on disconnect
+        if( ocuppy === null ) { // Create a new room
+            addNewRoom()
+            _currentRoom = currentRoom
+            ocuppy = 0
+        }
+
+        memPlayers[socket.id] = {room:_currentRoom, ocuppy:ocuppy} // for easy remove on disconnect
 
         roons[ _currentRoom ].players[ socket.id ] = { // add player to this room
             name: data.name,
-            data: initialPosition[ roons[ _currentRoom ].count ]
+            data: initialPosition[ ocuppy ]
         }
 
-
         socket.join( _currentRoom )
-
-        roons[ _currentRoom ].count++ // increment the number of players in this room
 
         io.to( _currentRoom ).emit('msg', `${data.name} entrou na arena`)
 
         if( !roons[ _currentRoom ].proccess ) roons[ _currentRoom ].proccess = setInterval( wordProccess, 0, _currentRoom )
 
-        if( roons[ _currentRoom ].count > maxPlayersPerRoom - 1 ) {
-            addNewRoom()
-        }
     })
 
 
@@ -98,21 +109,21 @@ io.on('connection', socket => {
     
     socket.on('disconnecting', () => {
 
-        const room = players[socket.id] // get the room
+        const room = memPlayers[socket.id].room // get the room
         const playerName = roons[ room ].players[ socket.id ].name
         
         // Remove the player from the room
-        roons[ room ].count-- 
+        roons[ room ].occupy[ memPlayers[ socket.id ].occupy ] = false
         delete roons[ room ].players[ socket.id ]
-        delete players[ socket.id ]
+        delete memPlayers[ socket.id ]
 
         // Inform the players of the room
         io.to( room ).emit('msg', `${playerName} deixou a batalha.`)
 
         // check if the room is empty
-        if( roons[ room ].count <= 0 ) {
+        if( roons[ room ].occupy.every( i => { return !i }) ) {
             clearInterval( roons[ room ].proccess )
-            if( room == currentRoom ) addNewRoom()
+            if( room == currentRoom ) addNewRoom() // if is the last room, create a new room
             delete roons[ room ]
         }
     });
