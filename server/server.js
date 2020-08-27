@@ -15,10 +15,6 @@ let currentRoom = uuidv4()
 let players = {}
 let roons = {}
 
-const wordProccess = sector => {
-    //const globalData = worldCalc( playersData[sector] )
-    //io.to( '' ).emit('data', 0)
-}
 
 const addNewRoom = () => {
     currentRoom = uuidv4()
@@ -31,8 +27,8 @@ const addNewRoom = () => {
 
 const initialPosition = [
     // [xpos, ypos, orientation, lockingTo, energy]
-    [-500, 0, 0, 0, 1000], // team 1: position 0
-    [-500, 100, 0, 0, 1000], // team 1: position 1
+    [120, 120, 0, 0, 1000], // team 1: position 0
+    [400, 400, 0, 0, 1000], // team 1: position 1
     [-500, 200, 0, 0, 1000], // team 1: position 2
     [500, 0, 180, 180, 1000], // team 2: position 0
     [500, 100, 180, 180, 1000], // team 2: position 1
@@ -40,6 +36,25 @@ const initialPosition = [
 ]
 
 addNewRoom()
+
+const worldCalc = context => {
+    // Do calcs
+    return []
+}
+
+const wordProccess = sector => {
+    //const globalData = worldCalc( playersData[sector] )
+    io.to( sector ).emit('server', roons[ sector ].players)
+    
+    /*
+    for (var [, { name, data }] of Object.entries( roons[ sector ].players )) {
+    a = { 
+        H8xBdPEjilowVjWlAAAA: { 
+            name: 'sillas_1fc2f871-9ec9-4274-946e-57de2a7b8adf',
+            data: [ -500, 0, 0, 0, 1000 ] 
+        } 
+    }*/
+}
 
 io.on('connection', socket => {
 
@@ -63,7 +78,7 @@ io.on('connection', socket => {
 
         if( !roons[ _currentRoom ].proccess ) roons[ _currentRoom ].proccess = setInterval( wordProccess, 0, _currentRoom )
 
-        if( roons[ _currentRoom ].count > maxPlayersPerRoom ) {
+        if( roons[ _currentRoom ].count > maxPlayersPerRoom - 1 ) {
             addNewRoom()
         }
     })
@@ -73,7 +88,7 @@ io.on('connection', socket => {
 
     socket.on('data', data => {
 
-        console.log( data );
+        //console.log( data );
         /*
         if(data.event === 'mm' && playersData[ socket.id ]) {
             io.to( playersData[ socket.id ].sector ).emit('server', {u: data.user, e:'p', d: data.data}) // broadcast

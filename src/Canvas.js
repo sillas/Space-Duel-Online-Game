@@ -50,6 +50,27 @@ const Canvas = () => {
     }, [])
 
     const receiveData = data => {
+
+        for (var [, { name, data }] of Object.entries( data )) {
+
+            if( name === user) {
+                // console.log( name, data );
+                input_mouse_position.current = [ data[0], data[1] ]
+            }
+
+        }
+
+        console.log('-------------------------------');
+
+        /*
+        { 
+            H8xBdPEjilowVjWlAAAA: { 
+                name: 'sillas_1fc2f871-9ec9-4274-946e-57de2a7b8adf',
+                data: [ -500, 0, 0, 0, 1000 ] 
+            } 
+        }*/
+        
+        /*
         let { u, e, d } = data
         
         if(u === user) {
@@ -64,6 +85,7 @@ const Canvas = () => {
                     break;
             }
         }
+        */
     }
 
     const animate = () => { // (time) to get the milliseconds since app start.
