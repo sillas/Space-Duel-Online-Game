@@ -42,7 +42,7 @@ addNewRoom()
 
 const wordProccess = sector => {
     const currentT = (new Date()).getTime()
-    let deltaT = (currentT - roons[ sector ].time) / 1000
+    const deltaT = (currentT - roons[ sector ].time) / 1000
 
     if( deltaT < 5 ){
 
@@ -50,6 +50,7 @@ const wordProccess = sector => {
 
         for (let [, { name, data, input, paramns }] of Object.entries( roons[ sector ].players )) {
 
+            // ------------------------------------------- Ships movements
             data[2] += input[0] < 0 ? -0.002 : input[0] > 0 ? 0.002 : 0
 
             const V = paramns.velocity
@@ -65,6 +66,7 @@ const wordProccess = sector => {
 
             V[0] += Fx * dtm
             V[1] += Fy * dtm
+            // -------------------------------------------
 
             toEmit[name] = data.slice(0)
         }
@@ -121,7 +123,6 @@ io.on('connection', socket => {
         io.to( _currentRoom ).emit('msg', `${data.name} entrou na arena`)
 
         if( !roons[ _currentRoom ].proccess ) roons[ _currentRoom ].proccess = setInterval( wordProccess, 0, _currentRoom )
-
     })
 
 
@@ -138,7 +139,7 @@ io.on('connection', socket => {
         'num':  7
     }
 
-    socket.on('player_input', data => {
+    socket.on('player_inputs', data => {
         roons[ memPlayers[socket.id].room ].players[ socket.id ].input[ inputDict[ data.event ] ] = data.input
     })
     
