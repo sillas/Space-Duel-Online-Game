@@ -71,8 +71,8 @@ const Canvas = () => {
         context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
         //draw_scenario()
 
-        for ( let [, { name, data }] of ships.current ) { // first get the camera position
-            console.log( data );
+        for ( let [ name, data ] of ships.current ) { // first get the camera position
+            console.log( data )
             if( name === user ) {
                 camPosition.current = [data[0], data[1]]
                 break
@@ -81,7 +81,7 @@ const Canvas = () => {
 
         console.log('---------------------------');
 
-        for ( let [, { name, data }] of ships.current ) {
+        for ( let [ name, data ] of ships.current ) {
             drawSpaceShips( name, data )
         }
         // animate Here
@@ -138,10 +138,10 @@ const Canvas = () => {
     // Socket events ----------------------------------
 
     const socketSend = ( event, data ) => {
-        socket.emit('data', {
-            user: user,
+        socket.emit('player_input', {
+            // user: user,
             event: event,
-            data: data
+            input: data
         })
         return data
     }
@@ -154,13 +154,13 @@ const Canvas = () => {
 
     const mouseDown = ({nativeEvent}) => {
         const { button, offsetX, offsetY } = nativeEvent
-        input_mouse_button.current[ button ] = socketSend('md_' + button, true)
+        input_mouse_button.current[ button ] = socketSend('mb' + button, true)
         socketSend('mm', [ offsetX, offsetY ])
     }
 
     const mouseUp = ({nativeEvent}) => {
         const { button } = nativeEvent
-        input_mouse_button.current[ button ] = socketSend('mu_' + button, false)        
+        input_mouse_button.current[ button ] = socketSend('mb' + button, false)        
     }
 
     const mouseWheel = ({nativeEvent}) => {
@@ -169,13 +169,13 @@ const Canvas = () => {
 
             if( input_mouse_wheel.current === wheel_mouse_max_min.current[1] ) return
             
-            input_mouse_wheel.current = socketSend('mw', input_mouse_wheel.current + 1)
+            input_mouse_wheel.current += 1
             return
         }
 
         if( input_mouse_wheel.current === wheel_mouse_max_min.current[0]) return
 
-        input_mouse_wheel.current = socketSend('mw', input_mouse_wheel.current - 1)
+        input_mouse_wheel.current -= 1
     }
 
     // Keyboard inputs --------------------------------
@@ -228,7 +228,6 @@ const Canvas = () => {
             case 'a':
             case 'ArrowRight':
             case 'd':
-                socketSend('dirx', 0)
                 input_direction.current[0] = socketSend('dirx', 0)
                 break
             case ' ':
@@ -241,7 +240,7 @@ const Canvas = () => {
             case '5':
                 break
             default:
-                console.log( 'press:', key ); // debug other buttons
+                break
         }
     }
     // ------------------------------------------------

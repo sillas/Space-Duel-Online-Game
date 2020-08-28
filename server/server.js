@@ -35,25 +35,33 @@ const initialPosition = [
     [500, 320, Math.PI, Math.PI, 1000, false]  // team 2: position 2
 ]
 
-addNewRoom()
 
-const worldCalc = context => {
-    // Do calcs
-    return []
-}
+addNewRoom()
 
 
 const wordProccess = sector => {
-    io.to( sector ).emit('server', roons[ sector ].players)
-    
+    const toEmit = {}
+
+    for (var [, { name, data, input }] of Object.entries( roons[ sector ].players )) {
+        // console.log( name, input )
+        // do Calc
+
+
+
+        toEmit[name] = data
+        
+    }
+
     /*
-    for (var [, { name, data }] of Object.entries( roons[ sector ].players )) {
-    a = { 
-        H8xBdPEjilowVjWlAAAA: { 
+    a = {
+        H8xBdPEjilowVjWlAAAA: {
             name: 'sillas_1fc2f871-9ec9-4274-946e-57de2a7b8adf',
-            data: [ -500, 0, 0, 0, 1000 ] 
+            data: [500, 120, Math.PI, Math.PI, 1000, false],
+            input: [0, 0, [0, 0], false, false, false, false, 0]
         } 
     }*/
+
+    io.to( sector ).emit('server', toEmit )
 }
 
 
@@ -84,7 +92,10 @@ io.on('connection', socket => {
 
         roons[ _currentRoom ].players[ socket.id ] = { // add player to this room
             name: data.name,
-            data: initialPosition[ occupy ]
+            data: initialPosition[ occupy ],
+            //   input dir, mouse pos, mouse buttons,     space, nuns
+            //      x, y, [x, y],  left,  mid,  right, 
+            input: [0, 0, [0, 0], false, false, false, false, '0']
         }
 
         socket.join( _currentRoom )
@@ -97,13 +108,20 @@ io.on('connection', socket => {
 
 
     // ------------------------------------------------------- preparar o disconnect
+    
+    const inputDict = {
+        'dirx': 0,
+        'diry': 1,
+        'mm':   2,
+        'mb0':  3,
+        'mb1':  4,
+        'mb2':  5,
+        'space':6,
+        'num':  7
+    }
 
-    socket.on('data', data => {
-        /*
-        if(data.event === 'mm' && playersData[ socket.id ]) {
-            io.to( playersData[ socket.id ].sector ).emit('server', {u: data.user, e:'p', d: data.data}) // broadcast
-        }
-        */
+    socket.on('player_input', data => {
+        roons[ memPlayers[socket.id].room ].players[ socket.id ].input[ inputDict[ data.event ] ] = data.input
     })
     
     socket.on('disconnecting', () => {
