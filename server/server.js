@@ -27,13 +27,13 @@ const addNewRoom = () => {
 }
 
 const initialPosition = [
-    // [xpos, ypos, orientation, lockingTo, energy, team, start absVelocity]
-    [100, 120, 0, 0, 1000, true, 0],              // team 1: position 0
-    [500, 120, Math.PI, Math.PI, 1000, false, 0], // team 2: position 0
+    // [xpos, ypos, orientation, lockingTo, energy, team]
+    [100, 120, 0, 0, 1000, true],              // team 1: position 0
+    [500, 120, Math.PI, Math.PI, 1000, false], // team 2: position 0
     [100, 220, 0, 0, 1000, true, 0],              // team 1: position 1
-    [500, 220, Math.PI, Math.PI, 1000, false, 0], // team 2: position 1
+    [500, 220, Math.PI, Math.PI, 1000, false], // team 2: position 1
     [100, 320, 0, 0, 1000, true, 0],              // team 1: position 2
-    [500, 320, Math.PI, Math.PI, 1000, false, 0]  // team 2: position 2
+    [500, 320, Math.PI, Math.PI, 1000, false]  // team 2: position 2
 ]
 
 
@@ -48,18 +48,25 @@ const wordProccess = sector => {
 
         const toEmit = {}
 
-        for (let [key , { name, data, input, constants }] of Object.entries( roons[ sector ].players )) {
+        for (let [, { name, data, input, paramns }] of Object.entries( roons[ sector ].players )) {
 
-            let V = data[6]
-            const A = constants.force * input[1] / constants.mass
+            data[2] += input[0] < 0 ? -0.002 : input[0] > 0 ? 0.002 : 0
 
-            //console.log( A, data[0] );
+            const V = paramns.velocity
+            const dt22m = deltaT * deltaT / (2 * paramns.mass)
+            const dtm = deltaT / paramns.mass
 
-            data[0] += V * deltaT + (A * deltaT * deltaT / 2)
+            const F = paramns.force * input[1]
+            const Fx = F * Math.cos( data[2] )
+            const Fy = F * Math.sin( data[2] )
 
-            data[6] += A * deltaT
+            data[0] += V[0] * deltaT + Fx * dt22m
+            data[1] += V[1] * deltaT + Fy * dt22m
 
-            toEmit[name] = data.slice(0, -1)
+            V[0] += Fx * dtm
+            V[1] += Fy * dtm
+
+            toEmit[name] = data.slice(0)
         }
 
         io.to( sector ).emit('server', toEmit )
@@ -102,10 +109,10 @@ io.on('connection', socket => {
             //   input dir, mouse pos, mouse buttons,     space, nuns
             //      x, y, [x, y],  left,  mid,  right, 
             input: [0, 0, [0, 0], false, false, false, false, '0'],
-            constants: {
-                force: 100000,
-                mass: 1000
-                // ...
+            paramns: {
+                force: 100, // in KN
+                mass: 1, // in tons
+                velocity: [0, 0]
             }
         }
 
