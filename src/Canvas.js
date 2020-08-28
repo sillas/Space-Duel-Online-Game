@@ -185,11 +185,11 @@ const Canvas = () => {
         switch (key) {
             case 'ArrowUp':
             case 'w': // y axis is upside down
-                input_direction.current[1] = input_direction.current[1] === -1 ? -1: socketSend('diry', -1)
+                input_direction.current[1] = input_direction.current[1] === 1 ? 1: socketSend('diry', 1)
                 break
             case 'ArrowDown':
             case 's':
-                input_direction.current[1] = input_direction.current[1] === 1 ? 1: socketSend('diry', 1)
+                input_direction.current[1] = input_direction.current[1] === -1 ? -1: socketSend('diry', -1)
                 break
             case 'ArrowLeft':
             case 'a':

@@ -21,18 +21,19 @@ const addNewRoom = () => {
     roons[ currentRoom ] = {
         occupy:[false, false, false, false, false, false],
         proccess:null,
+        time: (new Date()).getTime(),
         players:{}
     }
 }
 
 const initialPosition = [
-    // [xpos, ypos, orientation, lockingTo, energy, team]
-    [100, 120, 0, 0, 1000, true], // team 1: position 0
-    [500, 120, Math.PI, Math.PI, 1000, false], // team 2: position 0
-    [100, 220, 0, 0, 1000, true], // team 1: position 1
-    [500, 220, Math.PI, Math.PI, 1000, false], // team 2: position 1
-    [100, 320, 0, 0, 1000, true], // team 1: position 2
-    [500, 320, Math.PI, Math.PI, 1000, false]  // team 2: position 2
+    // [xpos, ypos, orientation, lockingTo, energy, team, start absVelocity]
+    [100, 120, 0, 0, 1000, true, 0],              // team 1: position 0
+    [500, 120, Math.PI, Math.PI, 1000, false, 0], // team 2: position 0
+    [100, 220, 0, 0, 1000, true, 0],              // team 1: position 1
+    [500, 220, Math.PI, Math.PI, 1000, false, 0], // team 2: position 1
+    [100, 320, 0, 0, 1000, true, 0],              // team 1: position 2
+    [500, 320, Math.PI, Math.PI, 1000, false, 0]  // team 2: position 2
 ]
 
 
@@ -40,28 +41,33 @@ addNewRoom()
 
 
 const wordProccess = sector => {
-    const toEmit = {}
+    const currentT = (new Date()).getTime()
+    let deltaT = (currentT - roons[ sector ].time) / 1000
 
-    for (var [, { name, data, input }] of Object.entries( roons[ sector ].players )) {
-        // console.log( name, input )
-        // do Calc
+    if( deltaT < 5 ){
 
+        const toEmit = {}
 
+        for (let [key , { name, data, input, constants }] of Object.entries( roons[ sector ].players )) {
 
-        toEmit[name] = data
-        
+            let V = data[6]
+            const A = constants.force * input[1] / constants.mass
+
+            //console.log( A, data[0] );
+
+            data[0] += V * deltaT + (A * deltaT * deltaT / 2)
+
+            data[6] += A * deltaT
+
+            toEmit[name] = data.slice(0, -1)
+        }
+
+        io.to( sector ).emit('server', toEmit )
     }
 
-    /*
-    a = {
-        H8xBdPEjilowVjWlAAAA: {
-            name: 'sillas_1fc2f871-9ec9-4274-946e-57de2a7b8adf',
-            data: [500, 120, Math.PI, Math.PI, 1000, false],
-            input: [0, 0, [0, 0], false, false, false, false, 0]
-        } 
-    }*/
-
-    io.to( sector ).emit('server', toEmit )
+    if( roons[ sector ] ) {
+        roons[ sector ].time = currentT
+    }
 }
 
 
@@ -92,10 +98,15 @@ io.on('connection', socket => {
 
         roons[ _currentRoom ].players[ socket.id ] = { // add player to this room
             name: data.name,
-            data: initialPosition[ occupy ],
+            data: initialPosition[ occupy ].slice(0),
             //   input dir, mouse pos, mouse buttons,     space, nuns
             //      x, y, [x, y],  left,  mid,  right, 
-            input: [0, 0, [0, 0], false, false, false, false, '0']
+            input: [0, 0, [0, 0], false, false, false, false, '0'],
+            constants: {
+                force: 100000,
+                mass: 1000
+                // ...
+            }
         }
 
         socket.join( _currentRoom )
