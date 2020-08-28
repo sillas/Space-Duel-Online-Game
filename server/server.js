@@ -51,6 +51,8 @@ const wordProccess = sector => {
         for (let [, { name, data, input, paramns }] of Object.entries( roons[ sector ].players )) {
 
             // ------------------------------------------- Ships movements
+
+            // TODO: Iplement the power energy dissipation to limit the velocity
             data[2] += input[0] < 0 ? -0.002 : input[0] > 0 ? 0.002 : 0
 
             const V = paramns.velocity
