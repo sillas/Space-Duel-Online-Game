@@ -31,13 +31,14 @@ const Canvas = () => {
         backgroundSize: "cover"
     }
 
-    const winW = useRef( window.innerWidth - 3 )
-    const winH = useRef( window.innerHeight - 3 )
+    const windowSize = useRef([window.innerWidth - 3, window.innerHeight - 3])
+    const midWindow = useRef( [ window.innerWidth >> 1, window.innerHeight >> 1] )
     const wheel_mouse_max_min = useRef( [0, 10] )
     const canvas_ref = useRef( null )
     const context_ref = useRef( null )
     const animate_ref = useRef( null )
     const input_direction = useRef( [0, 0] ) // [x, y] directions
+    const prevPosition = useRef( [0, 0] ) // [x, y]
     const input_space = useRef( false ) // space bar
     const input_numeric = useRef( '1' ) // input numbers: 1 to 5
     // const input_mouse_position = useRef( [0, 0] ) // [x, y]
@@ -48,8 +49,8 @@ const Canvas = () => {
 
     useEffect(() => {
         const canvas = canvas_ref.current
-        canvas.width = winW.current
-        canvas.height = winH.current
+        canvas.width = windowSize.current[0]
+        canvas.height = windowSize.current[1]
         canvas.oncontextmenu = ev => ev.preventDefault() // prevent right-click context menu
 
         context_ref.current = canvas.getContext( '2d' )
@@ -72,14 +73,18 @@ const Canvas = () => {
         // drawBackgroundScenario()
 
         for ( let [ name, data ] of ships.current ) { // first get the camera position
-            console.log( data )
+
             if( name === user ) {
-                camPosition.current = [data[0], data[1]]
+                // const [x0, y0] = prevPosition.current
+                // const delta = [data[0] - x0, data[1] - y0]
+                
+                camPosition.current = [ data[0], data[1] ]
+
+                prevPosition.current = [ data[0], data[1] ]
+                
                 break
             }
         }
-
-        console.log('---------------------------');
 
         for ( let [ name, data ] of ships.current ) {
             drawSpaceShips( name, data )
@@ -103,9 +108,20 @@ const Canvas = () => {
         const orientation = data[2]
         const team = data[5]      
         const ship_from_db = [[-20, 22], [54, 0], [-20, -22]] // get when connect
+
+        const cam = ( initp ) => {
+            return [
+                ( camPosition.current[0] - initp[0] ) + midWindow.current[0],
+                ( camPosition.current[1] - initp[1] ) + midWindow.current[1]
+            ]
+        }
+
         const drawShip = (x, y) => {
 
             let rot = rotate( ship_from_db[0][0] + x, ship_from_db[0][1] + y, [x, y], orientation);
+            rot = cam( rot )
+
+            console.log( rot );
 
             context_ref.current.beginPath()
             context_ref.current.moveTo( rot[0], rot[1] )
@@ -113,6 +129,7 @@ const Canvas = () => {
             for(let index = 1; index < ship_from_db.length; index++) {
 
                 rot = rotate( ship_from_db[index][0] + x, ship_from_db[index][1] + y, [x, y], orientation);
+                rot = cam( rot )
                 context_ref.current.lineTo( rot[0], rot[1] )
 
             }
