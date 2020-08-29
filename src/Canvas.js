@@ -78,10 +78,11 @@ const Canvas = () => {
 
                 //prevPosition.current = [ data[0], data[1] ] middust
 
+                document.getElementById('planet').setAttribute('style', `left: ${ (data[0] / 250) + 500 }px; top: ${ (data[1] / 250) + 200 }px`)
                 document.getElementById('backdust').setAttribute('style', `background-position: ${ data[0] >> 3 }px ${ data[1] >> 3 }px`)
                 document.getElementById('middust').setAttribute('style', `background-position: ${ (data[0] - 500) >> 1 }px ${ (data[1] - 500) >> 1 }px`)
                 document.getElementById('frontdust').setAttribute('style', `background-position: ${ data[0] - 300 }px ${ data[1] - 900 }px`)
-                
+
                 break
             }
         }
@@ -258,6 +259,7 @@ const Canvas = () => {
         <div>
             <div className="backstars common"></div>
             <div className="blinkStars common"></div>
+            <div className="planetBase crescent_planet" id="planet"></div>
 
             <div className="backDustClass common" id="backdust"></div>
             <div className="midDustClass common" id="middust"></div>
