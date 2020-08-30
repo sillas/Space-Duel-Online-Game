@@ -74,10 +74,19 @@ const wordProccess = sector => {
                 power = compDir[1] / 5
 
             } else {
+                
+                const rSign = Math.sign( input[0] )
 
-                data[2] += Math.sign( input[0] ) * 0.002
-                forceDirection = data[2]
+                if( input[0] && paramns.Vrotate[1] === rSign ) {
+                    paramns.Vrotate[0] += paramns.Vrotate[0] < 0.002 ? 0.000005 : 0
+                }
+                else {
+                    paramns.Vrotate[0] -= paramns.Vrotate[0] > 0 ? 0.000005 : 0
+                    if( paramns.Vrotate[0] < 0.000005) paramns.Vrotate[1] = rSign
+                }
 
+                data[2] += paramns.Vrotate[0] * paramns.Vrotate[1] 
+                forceDirection = data[2]                
             }
             
             const V = paramns.velocity
@@ -141,7 +150,8 @@ io.on('connection', socket => {
             paramns: {
                 force: 100, // in KN
                 mass: 1, // in tons
-                velocity: [0, 0]
+                velocity: [0, 0],
+                Vrotate: [0, 0] // Rotation factor, signal
             }
         }
 
