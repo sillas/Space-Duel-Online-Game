@@ -4,7 +4,7 @@ A simple online game for learn about:
     - Node.js
     - WebSockets/Socket.Io
     - Javascript/Canvas
-    - Fisics for games
+    - Physics for games
     - Code optimization and low latency
 
 ## Controls:
