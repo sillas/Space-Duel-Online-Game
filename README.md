@@ -7,8 +7,30 @@ A simple online game for learn about:
     - Fisics for games
     - Code optimization and low latency
 
-## Controls - TO DO
+## Controls:
 
+### Main Power
+- Up arrow or 'w' -> Accelerate forward
+- Down arrow or 's' -> Acelerate Backward
+- Left arrow or 'a' -> turn left
+- Right arrow or 'd' -> Turn right
+
+### RCS
+- Shift or '0' + Up arrow or 'w' -> Slow forward acceleration
+- Shift or '0' + Down arrow or 's' -> Slow Backward acceleration
+- Shift or '0' + Left arrow or 'a' -> Slow acceleration to the left
+- Shift or '0' + Right arrow or 'd' -> Slow acceleration to the right
+
+## TODO:
+- Limit the power/energy
+- Fire weapons
+- Front Page, connection waiting pages, result page, and so on.
+- HUD's with some information
+- Minimap or RADAR
+- Real Time Communication between players (voice or chat)
+- ...
+
+![alt printscreen](https://raw.githubusercontent.com/sillas/Space-Duel-Online-Game/feature/setup-controls-and-calcs/docs/prt1.png)
 
 ------------------------------------------------
 First install Node.js/npm
