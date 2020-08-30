@@ -56,7 +56,7 @@ const wordProccess = sector => {
     const currentT = (new Date()).getTime()
     const deltaT = (currentT - roons[ sector ].time) / 1000
 
-    if( deltaT < 5 ){
+    if( deltaT < 5 ) { // rudimentary filter
 
         const toEmit = {}
 
@@ -74,34 +74,35 @@ const wordProccess = sector => {
                 power = compDir[1] / 5
 
             } else {
-                
-                const rSign = Math.sign( input[0] )
+                // ------------------------------------------ Rotation of the ship
+                const rSign = Math.sign( input[0] ) // 1 = clockwise, -1 = anticlockwise, 0 = stop
+                const rIncrement = 0.000005
 
                 if( input[0] && paramns.Vrotate[1] === rSign ) {
-                    paramns.Vrotate[0] += paramns.Vrotate[0] < 0.002 ? 0.000005 : 0
+                    paramns.Vrotate[0] += paramns.Vrotate[0] < 0.002 ? rIncrement : 0 // smooth increment
                 }
                 else {
-                    paramns.Vrotate[0] -= paramns.Vrotate[0] > 0 ? 0.000005 : 0
-                    if( paramns.Vrotate[0] < 0.000005) paramns.Vrotate[1] = rSign
+                    paramns.Vrotate[0] -= paramns.Vrotate[0] > 0 ? rIncrement : 0 // smooth decrement
+                    if( paramns.Vrotate[0] < rIncrement) paramns.Vrotate[1] = rSign
                 }
 
-                data[2] += paramns.Vrotate[0] * paramns.Vrotate[1] 
-                forceDirection = data[2]                
-            }
+                data[2] += paramns.Vrotate[0] * paramns.Vrotate[1] // sign * rotate velocity
+                forceDirection = data[2]
+            } // ----------------------------------------------------------------
             
             const V = paramns.velocity
-            const dt22m = deltaT * deltaT / (2 * paramns.mass)
-            const dtm = deltaT / paramns.mass
+            const dt2_2m = deltaT * deltaT / (2 * paramns.mass)
+            const dt_m = deltaT / paramns.mass
 
             const F = paramns.force * power
             const Fx = F * Math.cos( forceDirection )
             const Fy = F * Math.sin( forceDirection )
 
-            data[0] += V[0] * deltaT + Fx * dt22m
-            data[1] += V[1] * deltaT + Fy * dt22m
+            data[0] += V[0] * deltaT + Fx * dt2_2m
+            data[1] += V[1] * deltaT + Fy * dt2_2m
 
-            V[0] += Fx * dtm
-            V[1] += Fy * dtm
+            V[0] += Fx * dt_m
+            V[1] += Fy * dt_m
             // -------------------------------------------
 
             toEmit[name] = data.slice(0)
