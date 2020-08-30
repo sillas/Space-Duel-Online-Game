@@ -40,6 +40,18 @@ const initialPosition = [
 addNewRoom()
 
 
+const directionalDict = {
+    '0,1':  [1, -1], // NS
+    '0,-1': [1, 1],
+    '1,1': [0.25, 1], // NE SW
+    '-1,-1': [0.25, -1],
+    '-1,1': [0.75, -1], // NW ES
+    '1,-1': [0.75, 1], 
+    '1,0':  [0.5, 1], // EW
+    '-1,0': [0.5, -1]
+}
+
+
 const wordProccess = sector => {
     const currentT = (new Date()).getTime()
     const deltaT = (currentT - roons[ sector ].time) / 1000
@@ -53,15 +65,28 @@ const wordProccess = sector => {
             // ------------------------------------------- Ships movements
 
             // TODO: Iplement the power energy dissipation to limit the velocity
-            data[2] += input[0] < 0 ? -0.002 : input[0] > 0 ? 0.002 : 0
+            let power = Math.sign( input[1] )
 
+            if( input[8] && (input[0] || input[1]) ) {
+                const compDir = directionalDict[[input[0], input[1]]]
+                const factor = Math.PI * compDir[0]
+                forceDirection = data[2] + factor
+                power = compDir[1] / 5
+
+            } else {
+
+                data[2] += Math.sign( input[0] ) * 0.002
+                forceDirection = data[2]
+
+            }
+            
             const V = paramns.velocity
             const dt22m = deltaT * deltaT / (2 * paramns.mass)
             const dtm = deltaT / paramns.mass
 
-            const F = paramns.force * input[1]
-            const Fx = F * Math.cos( data[2] )
-            const Fy = F * Math.sin( data[2] )
+            const F = paramns.force * power
+            const Fx = F * Math.cos( forceDirection )
+            const Fy = F * Math.sin( forceDirection )
 
             data[0] += V[0] * deltaT + Fx * dt22m
             data[1] += V[1] * deltaT + Fy * dt22m
@@ -112,7 +137,7 @@ io.on('connection', socket => {
             data: initialPosition[ occupy ].slice(0),
             //   input dir, mouse pos, mouse buttons,     space, nuns
             //      x, y, [x, y],  left,  mid,  right, 
-            input: [0, 0, [0, 0], false, false, false, false, '0'],
+            input: [0, 0, [0, 0], false, false, false, false, '0', false],
             paramns: {
                 force: 100, // in KN
                 mass: 1, // in tons
@@ -126,10 +151,8 @@ io.on('connection', socket => {
 
         if( !roons[ _currentRoom ].proccess ) roons[ _currentRoom ].proccess = setInterval( wordProccess, 0, _currentRoom )
     })
-
-
-    // ------------------------------------------------------- preparar o disconnect
     
+
     const inputDict = {
         'dirx': 0,
         'diry': 1,
@@ -138,13 +161,15 @@ io.on('connection', socket => {
         'mb1':  4,
         'mb2':  5,
         'space':6,
-        'num':  7
+        'num':  7,
+        'mod':  8
     }
 
     socket.on('player_inputs', data => {
         roons[ memPlayers[socket.id].room ].players[ socket.id ].input[ inputDict[ data.event ] ] = data.input
     })
     
+
     socket.on('disconnecting', () => {
 
         const room = memPlayers[socket.id].room // get the room
