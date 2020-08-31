@@ -72,12 +72,12 @@ const Canvas = () => {
 
             if( name === user ) {
                 
-                camPosition.current = [ data[0] , data[1]  ]
-                prevPosition.current = [ data[0], data[1] ]
+                camPosition.current = [data[0] , data[1]]
+                prevPosition.current = [data[0], data[1]]
 
                 document.getElementById('planet').setAttribute('style', `left: ${ (data[0] / 250) + 500 }px; top: ${ (data[1] / 250) + 200 }px`)
-                document.getElementById('backdust').setAttribute('style', `background-position: ${ data[0] >> 3 }px ${ data[1] >> 3 }px`)
-                document.getElementById('middust').setAttribute('style', `background-position: ${ (data[0] - 500) >> 2 }px ${ (data[1] - 500) >> 2 }px`)
+                document.getElementById('backdust').setAttribute('style', `background-position: ${ data[0] >> 4 }px ${ data[1] >> 4 }px`)
+                document.getElementById('middust').setAttribute('style', `background-position: ${ (data[0] - 500) >> 3 }px ${ (data[1] - 500) >> 3 }px`)
                 document.getElementById('frontdust').setAttribute('style', `background-position: ${ data[0] - 300 }px ${ data[1] - 900 }px`)
 
                 break

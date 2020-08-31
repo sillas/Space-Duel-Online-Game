@@ -1,0 +1,5 @@
+Use keycloak for player authorization:
+    see: https://www.keycloak.org/getting-started/getting-started-docker
+
+- When the other ships leave the screen, send only their position [x, y] and name.
+  Calc their distance from own player localy.
