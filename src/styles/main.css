@@ -26,14 +26,14 @@
 }
 
 .backstars {
-    background: #000 url(http://www.script-tutorials.com/demos/360/images/stars.png) repeat top center;
+    background: #000 url(../images/stars2.png) repeat top center;
     background-repeat: no-repeat;
     background-size: cover;
     z-index: 0;
 }
 
 .blinkStars {
-    background: transparent url(http://www.script-tutorials.com/demos/360/images/twinkling.png) repeat top center;
+    background: transparent url(../images/twinkling.png) repeat top center;
     z-index: 1;
 
     -moz-animation:move-twink-back 250s linear infinite;
@@ -44,6 +44,7 @@
 }
 
 /* --------------------------------------------------------- PLanet */
+
 .planetBase {
     position: fixed;
     top: 500px;
@@ -60,22 +61,23 @@
     box-shadow: 0 0 25px 3px rgba(104, 196, 188, 0.8), inset 10px 10px 0 4px white, inset 0 0 25px 8px white;
     z-index: 2;
 }
+
 /* --------------------------------------------------------------------- */
 
-
 .backDustClass {
-    background: transparent url(http://www.script-tutorials.com/demos/360/images/clouds.png) repeat top center;
+    background: transparent url(../images/clouds0_test.png) repeat top center;
+    background-size: 5000px 3000px;
     z-index: 3;
 }
 
 .midDustClass {
-    background:transparent url(http://www.script-tutorials.com/demos/360/images/clouds3.png) repeat top center;
-    background-size: 6000px 4000px;
+    background:transparent url(../images/clouds1.png) repeat top center;
+    background-size: 8000px 8000px;
     z-index:4;
 }
 
 .frontDustClass {
-    background:transparent url(../images/frontdust.png) repeat top center;
+    background:transparent url(../images/clouds2.png) repeat top center;
     background-size: 9000px 6000px;
     z-index:5;
 }
