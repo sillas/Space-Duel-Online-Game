@@ -26,14 +26,14 @@
 }
 
 .backstars {
-    background: #000 url(../images/stars2.png) repeat top center;
+    background: #000 url(../images/stars.png) repeat top center;
     background-repeat: no-repeat;
     background-size: cover;
     z-index: 0;
 }
 
 .blinkStars {
-    background: transparent url(../images/twinkling.png) repeat top center;
+    background: transparent url(../images/blinkstars.png) repeat top center;
     z-index: 1;
 
     -moz-animation:move-twink-back 250s linear infinite;
@@ -65,7 +65,7 @@
 /* --------------------------------------------------------------------- */
 
 .backDustClass {
-    background: transparent url(../images/clouds0_test.png) repeat top center;
+    background: transparent url(../images/clouds0.png) repeat top center;
     background-size: 5000px 3000px;
     z-index: 3;
 }
