@@ -30,7 +30,8 @@ A simple online game for learn about:
 - Real Time Communication between players (voice or chat)
 - ...
 
-![alt printscreen](https://raw.githubusercontent.com/sillas/Space-Duel-Online-Game/feature/setup-controls-and-calcs/docs/prt1.png)
+![alt printscreen](https://raw.githubusercontent.com/sillas/Space-Duel-Online-Game/master/docs/prt2.png)
+                   
 
 ------------------------------------------------
 First install Node.js/npm
