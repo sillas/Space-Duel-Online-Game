@@ -67,6 +67,21 @@ const wordProccess = sector => {
             // TODO: Iplement the power energy dissipation to limit the velocity
             let power = Math.sign( input[1] )
 
+            // fire weapons
+            if( input[3] || input[5] ) { // if press the left or the right mouse button
+
+                let mX = input[2][0]
+                let mY = input[2][1]
+
+                const modV = Math.abs( Math.sqrt( (mX * mX) + (mY * mY) ) )
+
+                mX =  mX / modV,
+                mY = mY / modV,
+                
+                console.log( [mX, mY] );
+            }
+            //-------------
+
             if( input[8] && (input[0] || input[1]) ) {
                 const compDir = directionalDict[[input[0], input[1]]]
                 const factor = Math.PI * compDir[0]
@@ -147,7 +162,7 @@ io.on('connection', socket => {
             data: initialPosition[ occupy ].slice(0),
             //   input dir, mouse pos, mouse buttons,     space, nuns
             //      x, y, [x, y],  left,  mid,  right, 
-            input: [0, 0, [0, 0], false, false, false, false, '0', false],
+            input: [0, 0, [1, 1], false, false, false, false, '0', false],
             paramns: {
                 force: 100, // in KN
                 mass: 1, // in tons
@@ -165,15 +180,15 @@ io.on('connection', socket => {
     
 
     const inputDict = {
-        'dirx': 0,
-        'diry': 1,
-        'mm':   2,
-        'mb0':  3,
-        'mb1':  4,
-        'mb2':  5,
-        'space':6,
-        'num':  7,
-        'mod':  8
+        'dirx': 0, // +-x dir
+        'diry': 1, // +-y dir
+        'mm':   2, // mouse move
+        'mb0':  3, // Mouse left button
+        'mb1':  4, // Mouse mid button
+        'mb2':  5, // Mouse right button
+        'space':6, // Space key
+        'num':  7, // 1 to 5 numbers key
+        'mod':  8  // Shift 
     }
 
     socket.on('player_inputs', data => {

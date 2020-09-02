@@ -53,9 +53,9 @@ const Canvas = () => {
         animate_ref.current = requestAnimationFrame( animate )
 
         socket.on('connect', () => console.log('[IO] Connect => A new connection start'))
-        socket.emit('join', { name: user }) // alpha1 == room
+        socket.emit('join', { name: user })
         socket.on('server', data => ships.current = Object.entries( data ) )
-        socket.on('msg', msg => console.log( msg) )
+        socket.on('msg', msg => console.log( msg ) )
 
         return () => {
             socket.off('server', data => ships.current = Object.entries( data ) )
@@ -151,7 +151,8 @@ const Canvas = () => {
     // Mouse inputs -----------------------------------
     const mouseMove = ({nativeEvent}) => {
         const {offsetX, offsetY} = nativeEvent
-        socketSend('mm', [ offsetX, offsetY ])
+        const [cx, cy] = midWindow.current
+        socketSend('mm', [ offsetX - cx, offsetY - cy ])
     }
 
 
