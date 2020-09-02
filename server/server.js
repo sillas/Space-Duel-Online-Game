@@ -36,10 +36,6 @@ const initialPosition = [
     [500, 320, Math.PI, Math.PI, 1000, false]  // team 2: position 2
 ]
 
-
-addNewRoom()
-
-
 const directionalDict = {
     '0,1':  [1, -1], // NS
     '0,-1': [1, 1],
@@ -51,6 +47,26 @@ const directionalDict = {
     '-1,0': [0.5, -1]
 }
 
+const inputDict = {
+    'dirx': 0, // +-x dir
+    'diry': 1, // +-y dir
+    'mm':   2, // mouse move
+    'mb0':  3, // Mouse left button
+    'mb1':  4, // Mouse mid button
+    'mb2':  5, // Mouse right button
+    'space':6, // Space key
+    'num':  7, // 1 to 5 numbers key
+    'mod':  8  // Shift 
+}
+
+// [ weaponType, initialPosition, direction, initialEnergy, initialAbsoluteVelocity, rechargeTime (seconds), inpactOn (target), numbersOf ]
+const arsenalOfWeapons = {
+    'basic_t1': [ 'main', [0, 0], [1, 1], 100, 30, 2, null, 100 ]
+}
+
+
+addNewRoom() // Add default room
+
 
 const wordProccess = sector => {
     const currentT = (new Date()).getTime()
@@ -60,7 +76,7 @@ const wordProccess = sector => {
 
         const toEmit = {}
 
-        for (let [, { name, data, input, paramns }] of Object.entries( roons[ sector ].players )) {
+        for (let [, { name, data, input, paramns, weapons }] of Object.entries( roons[ sector ].players )) {
 
             // ------------------------------------------- Ships movements
 
@@ -68,17 +84,22 @@ const wordProccess = sector => {
             let power = Math.sign( input[1] )
 
             // fire weapons
-            if( input[3] || input[5] ) { // Pressing the left or right mouse button
+            if( (input[3] || input[5]) && paramns.rechargeTime == 0 ) { // Pressing the left or right mouse button
 
                 let mX = input[2][0]
                 let mY = input[2][1]
-
+                const newBullet = arsenalOfWeapons['basic_t1'].slice(0)
+                
                 const modV = Math.abs( Math.sqrt( (mX * mX) + (mY * mY) ) )
 
                 mX =  mX / modV,
                 mY = mY / modV,
+
+                newBullet[1] = [ data[0], data[1] ]
+                newBullet[2] = [mX, mY]
                 
-                console.log( [mX, mY] )
+                weapons.push( newBullet )
+
             }
             //-------------
 
@@ -167,8 +188,10 @@ io.on('connection', socket => {
                 force: 100, // in KN
                 mass: 1, // in tons
                 velocity: [0, 0],
-                Vrotate: [0, 0] // Rotation factor, signal
-            }
+                Vrotate: [0, 0], // Rotation factor, signal
+                rechargeTime: 0
+            },
+            weapons:[] // [ type, position, energy, initialVelocity, rechargeTime ]
         }
 
         socket.join( _currentRoom )
@@ -178,18 +201,6 @@ io.on('connection', socket => {
         if( !roons[ _currentRoom ].proccess ) roons[ _currentRoom ].proccess = setInterval( wordProccess, 0, _currentRoom )
     })
     
-
-    const inputDict = {
-        'dirx': 0, // +-x dir
-        'diry': 1, // +-y dir
-        'mm':   2, // mouse move
-        'mb0':  3, // Mouse left button
-        'mb1':  4, // Mouse mid button
-        'mb2':  5, // Mouse right button
-        'space':6, // Space key
-        'num':  7, // 1 to 5 numbers key
-        'mod':  8  // Shift 
-    }
 
     socket.on('player_inputs', data => {
         roons[ memPlayers[socket.id].room ].players[ socket.id ].input[ inputDict[ data.event ] ] = data.input
