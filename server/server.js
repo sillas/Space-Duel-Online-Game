@@ -64,11 +64,11 @@ const wordProccess = sector => {
 
             // ------------------------------------------- Ships movements
 
-            // TODO: Iplement the power energy dissipation to limit the velocity
+            // TODO: Implement power dissipation to limit speed
             let power = Math.sign( input[1] )
 
             // fire weapons
-            if( input[3] || input[5] ) { // if press the left or the right mouse button
+            if( input[3] || input[5] ) { // Pressing the left or right mouse button
 
                 let mX = input[2][0]
                 let mY = input[2][1]
@@ -78,7 +78,7 @@ const wordProccess = sector => {
                 mX =  mX / modV,
                 mY = mY / modV,
                 
-                console.log( [mX, mY] );
+                console.log( [mX, mY] )
             }
             //-------------
 
