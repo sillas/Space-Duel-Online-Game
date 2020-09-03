@@ -59,9 +59,9 @@ const inputDict = {
     'mod':  8  // Shift 
 }
 
-// [ weaponType, initialPosition, direction, initialEnergy, initialAbsoluteVelocity, rechargeTime (seconds), inpactOn (target), numbersOf ]
+// [ 0 weaponType, 1 initialPosition, 2 direction, 3 initialEnergy, 4 initialAbsoluteVelocity, 5 rechargeTime (miliseconds), 6 inpactOn (target) ]
 const arsenalOfWeapons = {
-    'basic_t1': [ 'main', [0, 0], [1, 1], 100, 30, 2, null, 100 ]
+    'basic_t1': [ 'main', [0, 0], [1, 1], 100, 500, 1000, null ]
 }
 
 
@@ -75,6 +75,7 @@ const wordProccess = sector => {
     if( deltaT < 5 ) { // rudimentary filter
 
         const toEmit = {}
+        let weaponToEmit = []
 
         for (let [, { name, data, input, paramns, weapons }] of Object.entries( roons[ sector ].players )) {
 
@@ -82,26 +83,6 @@ const wordProccess = sector => {
 
             // TODO: Implement power dissipation to limit speed
             let power = Math.sign( input[1] )
-
-            // fire weapons
-            if( (input[3] || input[5]) && paramns.rechargeTime == 0 ) { // Pressing the left or right mouse button
-
-                let mX = input[2][0]
-                let mY = input[2][1]
-                const newBullet = arsenalOfWeapons['basic_t1'].slice(0)
-                
-                const modV = Math.abs( Math.sqrt( (mX * mX) + (mY * mY) ) )
-
-                mX =  mX / modV,
-                mY = mY / modV,
-
-                newBullet[1] = [ data[0], data[1] ]
-                newBullet[2] = [mX, mY]
-                
-                weapons.push( newBullet )
-
-            }
-            //-------------
 
             if( input[8] && (input[0] || input[1]) ) {
                 const compDir = directionalDict[[input[0], input[1]]]
@@ -142,9 +123,62 @@ const wordProccess = sector => {
             // -------------------------------------------
 
             toEmit[name] = data.slice(0)
+
+            // --------------------------------- Calc the position of the bullets, if it exist, end send in another emit event
+            // weapon: from, to(null), ... other data_
+            // io.to( sector ).emit('serverWeapon', data )
+
+            // fire weapons
+            if( (input[3] || input[5]) && paramns.rechargeTime < currentT ) { // Pressing the left or right mouse button
+
+                let mX = input[2][0]
+                let mY = input[2][1]
+
+                const newBullet = arsenalOfWeapons['basic_t1'].slice(0)
+                const initialAbsoluteVelocity = newBullet[4]
+                const modV = Math.abs( Math.sqrt( (mX * mX) + (mY * mY) ) )
+
+                mX /= modV,
+                mY /= modV,
+
+                newBullet[1] = [ data[0], data[1] ]
+                newBullet[2] = [ mX, mY ]
+                newBullet[4] = [ // relative velocity
+                    initialAbsoluteVelocity * mX + V[0],
+                    initialAbsoluteVelocity * mY + V[1]
+                ]
+                
+                weapons.push( newBullet )
+                paramns.rechargeTime = currentT + newBullet[ 5 ]
+            }
+
+            //-------------
+
+            let index = 0
+            for( weapon of weapons ) {
+
+                weapon[3] -= 0.1
+
+                if( weapon[3] < -0.5 ) {
+                    weapons.splice( index , 1 )
+                    continue
+                }
+
+                weapon[1][0] += weapon[4][0] * deltaT
+                weapon[1][1] += weapon[4][1] * deltaT
+
+                //const energy = ~~weapon[3]
+                weaponToEmit.push( [ weapon[0], weapon[1], ~~weapon[3] ] ) // type, position, energy
+                index++
+            }
+    
         }
 
         io.to( sector ).emit('server', toEmit )
+
+        if( weaponToEmit.length > 0 ) {
+            io.to( sector ).emit('serverw', weaponToEmit )
+        }
     }
 
     if( roons[ sector ] ) {
