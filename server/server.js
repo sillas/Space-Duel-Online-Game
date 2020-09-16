@@ -78,7 +78,7 @@ const inputDict = {
 ]
 */
 const arsenalOfWeapons = {
-    'basic_t1': [ 'main', [0, 0], [1, 1], 100, 500, 300, null, null ]
+    'basic_t1': [ 'main', [0, 0], [1, 1], 100, 500, 500, null, null ]
 }
 
 // room: weapom
@@ -96,7 +96,6 @@ const wordProccess = sector => {
 
         const toEmit = {}
         let weaponToEmit = []
-        let first = true
 
         const limitDist = 30  
         let bullet
@@ -122,7 +121,7 @@ const wordProccess = sector => {
 
             const emit = [ 
                 bullet[0], // type
-                bullet[1],  // position
+                bullet[1], // position
                 ~~energy // energy
             ]
 
@@ -176,10 +175,6 @@ const wordProccess = sector => {
 
             toEmit[name] = data.slice(0)
 
-            // --------------------------------- Calc the position of the bullets, if it exist, end send in another emit event
-            // weapon: from, to(null), ... other data_
-            // io.to( sector ).emit('serverWeapon', data )
-
             // fire weapons
             if( (input[3] || input[5]) && paramns.rechargeTime < currentT ) { // Pressing the left or right mouse button
 
@@ -221,9 +216,9 @@ const wordProccess = sector => {
 
                     if( calcDist( bullet[1], [ data[0], data[1] ] ) < limitDist ) {
 
-                        flyingWeapons[ sector ].splice( index , 1 ) // remove bullet on the end of life
+                        flyingWeapons[ sector ].splice( index , 1 ) // Remove the bullet at the end of your life
 
-                        weaponToEmit[ index ].push( [bullet[6], name] )
+                        if( weaponToEmit[ index ] ) weaponToEmit[ index ].push( [bullet[6], name] )
 
                         flyingWeapons[ sector ].splice( index , 1 )
                     }
@@ -282,7 +277,6 @@ io.on('connection', socket => {
                 Vrotate: [0, 0], // Rotation factor, signal
                 rechargeTime: 0
             }
-            //weapons:[] // [ type, position, energy, initialVelocity, rechargeTime ]
         }
 
         socket.join( _currentRoom )
@@ -317,9 +311,9 @@ io.on('connection', socket => {
             if( room == currentRoom ) addNewRoom() // if is the last room, create a new room
             delete roons[ room ]
         }
-    });
+    })
 })
 
 server.listen(SERVER_PORT, SERVER_HOST, () => {
-    console.log(`[HTTP] Listen => Server is running att http://${SERVER_HOST}:${SERVER_PORT}`);
+    console.log(`[HTTP] Listen => Server is running att http://${SERVER_HOST}:${SERVER_PORT}`)
 })

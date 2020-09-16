@@ -1,26 +1,25 @@
 import React, { useRef, useEffect } from 'react'
 import io from 'socket.io-client'
-import { v4 as uuidv4 } from 'uuid'
-import './styles/main.css';
+import './styles/main.css'
 
-const user = 'sillas_' + uuidv4()
+const user = 'sillas-' + Date.now()
 const socket = io('http://localhost:8080')
 
 //--------------------------------------
 
 // ---------------- Helpers
 function rotate(x, y, offset, angle) { // angle in radians
-    var cos = Math.cos(angle);
-    var sin = Math.sin(angle);
+    var cos = Math.cos(angle)
+    var sin = Math.sin(angle)
 
     // Translate to (0, 0)
-    x -= offset[0];
-    y -= offset[1];
+    x -= offset[0]
+    y -= offset[1]
 
     // Rotation Matrix
     // |cosTh -sinTh|   |x|    |rX|
     // |sinTh  cosTh| * |y| =  |rY|
-    return [(cos*x -sin*y) + offset[0], (sin*x +cos*y) + offset[1]];
+    return [(cos*x -sin*y) + offset[0], (sin*x +cos*y) + offset[1]]
 }
 // ----------------- End helpers
 
@@ -69,7 +68,7 @@ const Canvas = () => {
 
 
     const animate = () => { // (time) to get the milliseconds since app start.
-        context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        context_ref.current.clearRect(0, 0, window.innerWidth, window.innerHeight)
 
         for ( let [ name, data ] of ships.current ) { // get the camera position
 
@@ -98,7 +97,7 @@ const Canvas = () => {
             /*
 
             if( impact ) {
-                //console.log( impact[0], impact[1] );
+                //console.log( impact[0], impact[1] )
             }
             */
 
@@ -111,7 +110,7 @@ const Canvas = () => {
             drawSpaceShips( name, data )
         }
 
-        animate_ref.current = requestAnimationFrame(animate);
+        animate_ref.current = requestAnimationFrame(animate)
     }
 
 
@@ -134,7 +133,7 @@ const Canvas = () => {
         context_ref.current.moveTo( p[0], p[1] - energy )
         context_ref.current.lineTo( p[0], p[1] + energy )
 
-        context_ref.current.strokeStyle = "#fff";
+        context_ref.current.strokeStyle = "#fff"
         context_ref.current.lineWidth = 2
 
         context_ref.current.stroke()
@@ -143,7 +142,7 @@ const Canvas = () => {
 
     const drawShip = (x, y, orientation, ship) => {
 
-        let rot = rotate( ship[0][0] + x, ship[0][1] + y, [x, y], orientation);
+        let rot = rotate( ship[0][0] + x, ship[0][1] + y, [x, y], orientation)
         rot = cam( rot )
 
         context_ref.current.beginPath()
@@ -151,7 +150,7 @@ const Canvas = () => {
 
         for(let index = 1; index < ship.length; index++) {
 
-            rot = rotate( ship[index][0] + x, ship[index][1] + y, [x, y], orientation);
+            rot = rotate( ship[index][0] + x, ship[index][1] + y, [x, y], orientation)
             rot = cam( rot )
             context_ref.current.lineTo( rot[0], rot[1] )
 
@@ -261,7 +260,7 @@ const Canvas = () => {
                 input_numeric.current = socketSend('num', key)
                 break
             default:
-                console.log( 'press:', key ); // debug other buttons
+                console.log( 'press:', key ) // debug other buttons
         }
     }
 
