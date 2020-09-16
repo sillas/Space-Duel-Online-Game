@@ -42,6 +42,7 @@ const Canvas = () => {
     const input_mouse_wheel = useRef( 0 )
     const camPosition = useRef([0, 0]) // Camera
     const ships = useRef( [] )
+    const weapons = useRef( [] )
     
     useEffect(() => {
         const canvas = canvas_ref.current
@@ -53,12 +54,14 @@ const Canvas = () => {
         animate_ref.current = requestAnimationFrame( animate )
 
         socket.on('connect', () => console.log('[IO] Connect => A new connection start'))
-        socket.emit('join', { name: user }) // alpha1 == room
+        socket.emit('join', { name: user })
         socket.on('server', data => ships.current = Object.entries( data ) )
-        socket.on('msg', msg => console.log( msg) )
+        socket.on('serverw', data => weapons.current = data )
+        socket.on('msg', msg => console.log( msg ) )
 
         return () => {
             socket.off('server', data => ships.current = Object.entries( data ) )
+            socket.off('serverw', data => weapons.current = data )
             socket.off('msg', () => {} )
             cancelAnimationFrame( animate_ref.current )
         }
@@ -84,6 +87,26 @@ const Canvas = () => {
             }
         }
 
+        for( let index in weapons.current ) {
+
+            let [ type, position, energy, impact ] = weapons.current[ index ]
+
+            // -------------------------
+            drawWeapon( position, energy )
+            // -------------------------
+
+            /*
+
+            if( impact ) {
+                //console.log( impact[0], impact[1] );
+            }
+            */
+
+            if( energy <= 0 || impact ) {
+                weapons.current.splice(index, 1)
+            }
+        }
+
         for ( let [ name, data ] of ships.current ) {
             drawSpaceShips( name, data )
         }
@@ -101,6 +124,22 @@ const Canvas = () => {
         ]
     }
 
+    const drawWeapon = ( position, energy ) => {
+        const p = cam(position)
+        energy = 2 + energy >> 4
+        context_ref.current.beginPath()
+
+        context_ref.current.moveTo( p[0] - energy, p[1] )
+        context_ref.current.lineTo( p[0] + energy, p[1] )
+        context_ref.current.moveTo( p[0], p[1] - energy )
+        context_ref.current.lineTo( p[0], p[1] + energy )
+
+        context_ref.current.strokeStyle = "#fff";
+        context_ref.current.lineWidth = 2
+
+        context_ref.current.stroke()
+        context_ref.current.fill()
+    }
 
     const drawShip = (x, y, orientation, ship) => {
 
@@ -151,14 +190,16 @@ const Canvas = () => {
     // Mouse inputs -----------------------------------
     const mouseMove = ({nativeEvent}) => {
         const {offsetX, offsetY} = nativeEvent
-        socketSend('mm', [ offsetX, offsetY ])
+        const [cx, cy] = midWindow.current
+        socketSend('mm', [ cx - offsetX, cy - offsetY ])
     }
 
 
     const mouseDown = ({nativeEvent}) => {
         const { button, offsetX, offsetY } = nativeEvent
+        const [cx, cy] = midWindow.current
         input_mouse_button.current[ button ] = socketSend('mb' + button, true)
-        socketSend('mm', [ offsetX, offsetY ])
+        socketSend('mm', [ cx - offsetX, cy - offsetY ])
     }
 
 

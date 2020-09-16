@@ -3,3 +3,12 @@ Use keycloak for player authorization:
 
 - When the other ships leave the screen, send only their position [x, y] and name.
   Calc their distance from own player localy.
+  - Not possible on server side, but on local, use it to display de direction.
+
+
+Game Sound and others tips:
+- https://www.w3schools.com/graphics/game_sound.asp
+
+To check colision or implements buttons use "isPointInPath".
+- isPointInPath detects if a given point is in inside the given path.
+- Only on canvas, not on server side

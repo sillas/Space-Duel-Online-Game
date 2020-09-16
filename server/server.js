@@ -26,6 +26,12 @@ const addNewRoom = () => {
     }
 }
 
+const calcDist = (A, B) => {
+    x = A[0] - B[0]
+    y = A[1] - B[1]
+    return Math.sqrt( x*x + y*y )
+}
+
 const initialPosition = [
     // [xpos, ypos, orientation, lockingTo, energy, team]
     [100, 120, 0, 0, 1000, true],              // team 1: position 0
@@ -35,10 +41,6 @@ const initialPosition = [
     [100, 320, 0, 0, 1000, true, 0],              // team 1: position 2
     [500, 320, Math.PI, Math.PI, 1000, false]  // team 2: position 2
 ]
-
-
-addNewRoom()
-
 
 const directionalDict = {
     '0,1':  [1, -1], // NS
@@ -51,6 +53,40 @@ const directionalDict = {
     '-1,0': [0.5, -1]
 }
 
+const inputDict = {
+    'dirx': 0, // +-x dir
+    'diry': 1, // +-y dir
+    'mm':   2, // mouse move
+    'mb0':  3, // Mouse left button
+    'mb1':  4, // Mouse mid button
+    'mb2':  5, // Mouse right button
+    'space':6, // Space key
+    'num':  7, // 1 to 5 numbers key
+    'mod':  8  // Shift 
+}
+
+/*
+[ 
+    0 weaponType, 
+    1 initialPosition, 
+    2 direction, 
+    3 initialEnergy, 
+    4 initialAbsoluteVelocity, 
+    5 rechargeTime (miliseconds), 
+    6 from
+    7 inpactOn (target)
+]
+*/
+const arsenalOfWeapons = {
+    'basic_t1': [ 'main', [0, 0], [1, 1], 100, 500, 300, null, null ]
+}
+
+// room: weapom
+const flyingWeapons = {}
+
+
+addNewRoom() // Add default room
+
 
 const wordProccess = sector => {
     const currentT = (new Date()).getTime()
@@ -59,12 +95,45 @@ const wordProccess = sector => {
     if( deltaT < 5 ) { // rudimentary filter
 
         const toEmit = {}
+        let weaponToEmit = []
+        let first = true
+
+        const limitDist = 30  
+        let bullet
+        let energy
+
+
+        for( let index in flyingWeapons[ sector ] ) {
+
+            bullet = flyingWeapons[ sector ][ index ]
+            energy = bullet[3]
+                
+            bullet[3] -= 0.1
+
+            if( bullet[3] <= 0 ) {
+                flyingWeapons[ sector ].splice( index , 1 ) // remove bullet, end of life
+                continue
+            }
+
+            // calc new position x += v * dt
+            for( index2 in bullet[1] ) {
+                bullet[1][ index2 ] += bullet[4][ index2 ] * deltaT
+            }
+
+            const emit = [ 
+                bullet[0], // type
+                bullet[1],  // position
+                ~~energy // energy
+            ]
+
+            weaponToEmit.push( emit )
+        }
 
         for (let [, { name, data, input, paramns }] of Object.entries( roons[ sector ].players )) {
 
             // ------------------------------------------- Ships movements
 
-            // TODO: Iplement the power energy dissipation to limit the velocity
+            // TODO: Implement power dissipation to limit speed
             let power = Math.sign( input[1] )
 
             if( input[8] && (input[0] || input[1]) ) {
@@ -106,9 +175,67 @@ const wordProccess = sector => {
             // -------------------------------------------
 
             toEmit[name] = data.slice(0)
+
+            // --------------------------------- Calc the position of the bullets, if it exist, end send in another emit event
+            // weapon: from, to(null), ... other data_
+            // io.to( sector ).emit('serverWeapon', data )
+
+            // fire weapons
+            if( (input[3] || input[5]) && paramns.rechargeTime < currentT ) { // Pressing the left or right mouse button
+
+                let mX = input[2][0]
+                let mY = input[2][1]
+
+                const newBullet = arsenalOfWeapons['basic_t1'].slice(0)
+                const initialAbsoluteVelocity = newBullet[4]
+                const modV = Math.abs( Math.sqrt( (mX * mX) + (mY * mY) ) )
+
+                mX /= modV,
+                mY /= modV,
+
+                newBullet[1] = [ data[0], data[1] ]
+                newBullet[2] = [ mX, mY ]
+                newBullet[4] = [ // relative velocity
+                    initialAbsoluteVelocity * mX + V[0],
+                    initialAbsoluteVelocity * mY + V[1]
+                ]
+                newBullet[6] = name
+                            
+                if( !flyingWeapons[ sector ] ) {
+                    flyingWeapons[ sector ] = []
+                }
+
+                flyingWeapons[ sector ].push( newBullet )
+
+                paramns.rechargeTime = currentT + newBullet[ 5 ]
+            }
+
+            // ---------------------------------
+
+            for( let index in flyingWeapons[ sector ] ) {
+                
+                if( flyingWeapons[ sector ][ index ][6] != name ) {
+
+                    bullet = flyingWeapons[ sector ][ index ]
+                    energy = bullet[3]
+
+                    if( calcDist( bullet[1], [ data[0], data[1] ] ) < limitDist ) {
+
+                        flyingWeapons[ sector ].splice( index , 1 ) // remove bullet on the end of life
+
+                        weaponToEmit[ index ].push( [bullet[6], name] )
+
+                        flyingWeapons[ sector ].splice( index , 1 )
+                    }
+                }
+            }
         }
 
         io.to( sector ).emit('server', toEmit )
+
+        if( weaponToEmit.length > 0 ) {
+            io.to( sector ).emit('serverw', weaponToEmit )
+        }
     }
 
     if( roons[ sector ] ) {
@@ -147,13 +274,15 @@ io.on('connection', socket => {
             data: initialPosition[ occupy ].slice(0),
             //   input dir, mouse pos, mouse buttons,     space, nuns
             //      x, y, [x, y],  left,  mid,  right, 
-            input: [0, 0, [0, 0], false, false, false, false, '0', false],
+            input: [0, 0, [1, 1], false, false, false, false, '0', false],
             paramns: {
                 force: 100, // in KN
                 mass: 1, // in tons
                 velocity: [0, 0],
-                Vrotate: [0, 0] // Rotation factor, signal
+                Vrotate: [0, 0], // Rotation factor, signal
+                rechargeTime: 0
             }
+            //weapons:[] // [ type, position, energy, initialVelocity, rechargeTime ]
         }
 
         socket.join( _currentRoom )
@@ -163,18 +292,6 @@ io.on('connection', socket => {
         if( !roons[ _currentRoom ].proccess ) roons[ _currentRoom ].proccess = setInterval( wordProccess, 0, _currentRoom )
     })
     
-
-    const inputDict = {
-        'dirx': 0,
-        'diry': 1,
-        'mm':   2,
-        'mb0':  3,
-        'mb1':  4,
-        'mb2':  5,
-        'space':6,
-        'num':  7,
-        'mod':  8
-    }
 
     socket.on('player_inputs', data => {
         roons[ memPlayers[socket.id].room ].players[ socket.id ].input[ inputDict[ data.event ] ] = data.input
