@@ -129,7 +129,7 @@ const wordProccess = sector => {
             weaponToEmit.push( emit )
         }
 
-        for (let [, { name, data, input, paramns, weapons }] of Object.entries( roons[ sector ].players )) {
+        for (let [, { name, data, input, paramns }] of Object.entries( roons[ sector ].players )) {
 
             // ------------------------------------------- Ships movements
 
@@ -200,9 +200,7 @@ const wordProccess = sector => {
                     initialAbsoluteVelocity * mY + V[1]
                 ]
                 newBullet[6] = name
-                                
-                // weapons.push( newBullet )
-
+                            
                 if( !flyingWeapons[ sector ] ) {
                     flyingWeapons[ sector ] = []
                 }
@@ -223,9 +221,7 @@ const wordProccess = sector => {
 
                     if( calcDist( bullet[1], [ data[0], data[1] ] ) < limitDist ) {
 
-                        // console.log( energy + ': impact on ' + name + " from " + bullet[6]  )
-
-                        flyingWeapons[ sector ].splice( index , 1 ) // remove bullet, end of life
+                        flyingWeapons[ sector ].splice( index , 1 ) // remove bullet on the end of life
 
                         weaponToEmit[ index ].push( [bullet[6], name] )
 
@@ -285,8 +281,8 @@ io.on('connection', socket => {
                 velocity: [0, 0],
                 Vrotate: [0, 0], // Rotation factor, signal
                 rechargeTime: 0
-            },
-            weapons:[] // [ type, position, energy, initialVelocity, rechargeTime ]
+            }
+            //weapons:[] // [ type, position, energy, initialVelocity, rechargeTime ]
         }
 
         socket.join( _currentRoom )

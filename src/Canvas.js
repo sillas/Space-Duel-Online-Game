@@ -95,9 +95,12 @@ const Canvas = () => {
             drawWeapon( position, energy )
             // -------------------------
 
+            /*
+
             if( impact ) {
                 //console.log( impact[0], impact[1] );
             }
+            */
 
             if( energy <= 0 || impact ) {
                 weapons.current.splice(index, 1)
