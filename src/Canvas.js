@@ -87,18 +87,21 @@ const Canvas = () => {
             }
         }
 
-        let index = 0
-        for( let [ type, position, energy ] of weapons.current ) {
+        for( let index in weapons.current ) {
+
+            let [ type, position, energy, impact ] = weapons.current[ index ]
 
             // -------------------------
             drawWeapon( position, energy )
             // -------------------------
 
-            if( energy <= 0 ) {
-                weapons.current.splice(index, 1)
-                continue
+            if( impact ) {
+                //console.log( impact[0], impact[1] );
             }
-            index++
+
+            if( energy <= 0 || impact ) {
+                weapons.current.splice(index, 1)
+            }
         }
 
         for ( let [ name, data ] of ships.current ) {

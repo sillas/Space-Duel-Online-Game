@@ -96,6 +96,38 @@ const wordProccess = sector => {
 
         const toEmit = {}
         let weaponToEmit = []
+        let first = true
+
+        const limitDist = 30  
+        let bullet
+        let energy
+
+
+        for( let index in flyingWeapons[ sector ] ) {
+
+            bullet = flyingWeapons[ sector ][ index ]
+            energy = bullet[3]
+                
+            bullet[3] -= 0.1
+
+            if( bullet[3] <= 0 ) {
+                flyingWeapons[ sector ].splice( index , 1 ) // remove bullet, end of life
+                continue
+            }
+
+            // calc new position x += v * dt
+            for( index2 in bullet[1] ) {
+                bullet[1][ index2 ] += bullet[4][ index2 ] * deltaT
+            }
+
+            const emit = [ 
+                bullet[0], // type
+                bullet[1],  // position
+                ~~energy // energy
+            ]
+
+            weaponToEmit.push( emit )
+        }
 
         for (let [, { name, data, input, paramns, weapons }] of Object.entries( roons[ sector ].players )) {
 
@@ -180,41 +212,26 @@ const wordProccess = sector => {
                 paramns.rechargeTime = currentT + newBullet[ 5 ]
             }
 
-            //-------------
+            // ---------------------------------
 
-            for( index in flyingWeapons[ sector ] ) {
-                const limitDist = 30
-                let dist = limitDist
-                let bullet = flyingWeapons[ sector ][index]
-                let energy = bullet[3]
-
-                bullet[3] -= 0.1
-
-                if( bullet[3] < -0.5 ) {
-                    flyingWeapons[ sector ].splice( index , 1 ) // remove bullet, end of life
-                    continue
-                }
-
-                // calc new position x += v * dt
-                for( index2 in bullet[1] ) {
-                    bullet[1][index2] += bullet[4][index2] * deltaT
-                }
+            for( let index in flyingWeapons[ sector ] ) {
                 
-                if( flyingWeapons[ sector ][index][6] != name ) {
-                    dist = calcDist(bullet[1], [data[0], data[1]])
-                }
+                if( flyingWeapons[ sector ][ index ][6] != name ) {
 
-                if( dist < limitDist ) {
-                    console.log( energy + ': impact on ' + name + " from " + bullet[6]  )
-                    flyingWeapons[ sector ].splice( index , 1 ) // remove bullet, end of life
-                }
+                    bullet = flyingWeapons[ sector ][ index ]
+                    energy = bullet[3]
 
-                //const energy = ~~energy
-                weaponToEmit.push( [ 
-                    bullet[0], // type
-                    bullet[1],  // position
-                    ~~energy // energy
-                ] )
+                    if( calcDist( bullet[1], [ data[0], data[1] ] ) < limitDist ) {
+
+                        // console.log( energy + ': impact on ' + name + " from " + bullet[6]  )
+
+                        flyingWeapons[ sector ].splice( index , 1 ) // remove bullet, end of life
+
+                        weaponToEmit[ index ].push( [bullet[6], name] )
+
+                        flyingWeapons[ sector ].splice( index , 1 )
+                    }
+                }
             }
         }
 
@@ -223,7 +240,6 @@ const wordProccess = sector => {
         if( weaponToEmit.length > 0 ) {
             io.to( sector ).emit('serverw', weaponToEmit )
         }
-
     }
 
     if( roons[ sector ] ) {
